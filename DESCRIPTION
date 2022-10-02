@@ -1,9 +1,9 @@
 Package: smart.data
 Title: Smart Data
 Type: Package
-Version: 1.3.21
-Author: Chionesu George <cgeorge@alliancehealthplan.org> [aut, cre]
-Maintainer: Chionesu George <cgeorge@alliancehealthplan.org>
+Version: 2.0.0
+Author: Chionesu George <sapienti.Dei@outlook.com> [aut, cre]
+Maintainer: Chionesu George <sapienti.Dei@outlook.com>
 License: Unicorn Overlords
 Encoding: UTF-8
 RoxygenNote: 7.2.0
