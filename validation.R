@@ -4,7 +4,7 @@ orig.data <- mtcars;
 #
 # ~ PART I: Functionality Tests====
 smrt <- smart.data$
-	new(orig.data, "smart cars")$
+	new(orig.data, "smart_cars")$
 	naming.rule(MPG = "mpg", chatty = TRUE)$
 	taxonomy.rule()$
 	enforce.rules(for_naming, for_usage)$
@@ -52,3 +52,10 @@ smrt$use()
 # ~ PART IV: Taxonomy Inheritance ====
 smrtr <- smart.data$new(smrt, "cars")
 smrtr$taxonomy.rule(update = TRUE) # Taxonomy terms should be identical
+
+# ~ PART V: Smart Cache ====
+smrtr$cache_mgr(action = upd)
+get.smart(list.only = TRUE)
+smrt$cache_mgr(action = upd)
+
+get.smart(list.only = TRUE)
