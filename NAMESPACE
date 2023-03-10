@@ -4,6 +4,15 @@ export(get.smart)
 export(is.smart)
 export(smart.data)
 export(smart.upgrade)
+<<<<<<< Updated upstream
+=======
+importFrom(book.of.utilities,as.regex)
+importFrom(book.of.utilities,unregex)
+importFrom(data.table,"%flike%")
+importFrom(data.table,"%ilike%")
+importFrom(data.table,"%like%")
+importFrom(data.table,like)
+>>>>>>> Stashed changes
 importFrom(magrittr,"%<>%")
 importFrom(magrittr,"%>%")
 importFrom(magrittr,"%T>%")

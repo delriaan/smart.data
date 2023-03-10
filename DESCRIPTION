@@ -6,7 +6,7 @@ Author: Chionesu George <sapienti.Dei@outlook.com> [aut, cre]
 Maintainer: Chionesu George <sapienti.Dei@outlook.com>
 License: Unicorn Overlords
 Encoding: UTF-8
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 Depends: R (>= 4.1.0)
 	, book.of.utilities (>= 1.7.0)
 	, data.table

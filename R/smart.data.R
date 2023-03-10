@@ -1,6 +1,11 @@
 #' @title Smart Interaction With Data
 #' @description R6 class \code{smart.data} facilitates the manipulation of a data set by providing rules-based operations for specific contexts.
 #' @importFrom magrittr %>% %T>% %<>% or
+<<<<<<< Updated upstream
+=======
+#' @importFrom data.table like %like% %ilike% %flike%
+#' @importFrom book.of.utilities unregex as.regex
+>>>>>>> Stashed changes
 #' @export
 smart.data <-	{ R6::R6Class(
 	classname = "smart.data"
