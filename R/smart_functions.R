@@ -3,6 +3,7 @@
 }
 
 .onUnload <- function(libpath){}
+
 #
 is.smart <- function(...){
 #' Check for Signs of Intelligence
@@ -71,10 +72,11 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 	});
 }
 
+#
 get.smart <- function(..., list.only = FALSE){
 #' Get a Smart Object
 #'
-#' \code{get.smart} retrieves \code{link[smart.data]} objects from the global smart-cache or throws a message if the global cache does not exist
+#' \code{get.smart} retrieves \code{\link{smart.data}} objects from the global smart-cache or throws a message if the global cache does not exist
 #'
 #' @param ... Names of the smart objects (as found in class member \code{name}) given as symbols or strings
 #' @param list.only (logical | FALSE) When \code{TRUE} existing keys of the smart-cache are returned before exiting
@@ -84,8 +86,17 @@ get.smart <- function(..., list.only = FALSE){
 #' @export
 
 	if (list.only)( return(.___SMART___$keys()) )
-	.these =  if (...length() == 0){
-			tcltk::tk_select.list(.___SMART___$keys(), multiple = TRUE, title = "Choose 'smart.data' Objects")
-		} else { as.character(rlang::exprs(...)) }
-	invisible(purrr::imap(purrr::set_names(.these), ~.___SMART___$get(.x)) %>% { if (length(.) == 1){ .[[1]] } else { . }});
+
+	.these <- if (...length() == 0){
+			if (interactive()){
+				tcltk::tk_select.list(.___SMART___$keys(), multiple = TRUE, title = "Choose 'smart.data' Objects")
+			} else {
+				.___SMART___$keys()
+			}
+	} else { as.character(rlang::exprs(...)) }
+
+	invisible(purrr::imap(
+		purrr::set_names(.these)
+		, ~.___SMART___$get(.x)) %>% { if (length(.) == 1){ .[[1]] } else { . }}
+		);
 }

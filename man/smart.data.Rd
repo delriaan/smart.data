@@ -4,13 +4,10 @@
 \alias{smart.data}
 \title{Smart Interaction With Data}
 \description{
-R6 class \code{smart.data} facilitates the manipulation of a data set by providing rules-based operations for specific contexts.
-}
-\section{Note}{
+\code{smart.data} is an R6 class that facilitates the manipulation of a data set by providing rules-based operations and taxonomical column reference.
 
-When no arguments are supplied, the default is to return the fields mapped to existing terms.  Using \code{retain = ''} returns all values making it equivalent to \code{smart_obj$data}
+You will need to install related package \href{https://github.com/delriaan/book.of.utilities}{book.of.utilities}
 }
-
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -108,7 +105,6 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
  \item{rule}{A quoted expression containing the rules to be enforced on fields mapped to the current term. The variable for the field must be expressed as 'x' or '.x' and the field name as 'y' or '.y': the law that is enforced exists in the context of \code{\link[purrr]{imap}}}
 \item{fields}{The fields in \code{$data} mapped to the term}
 }
-Once \code{term.map} is saved to \code{$smart.rules$for_usage}, it is given an attribute entitled "law" which contains a quoted expression defining how the rules are enforced when \code{$enforce.rules()} is invoked.  \emph{Note:} \code{$smart.rules$for_usage} can be modified directly when adding custom taxonomy terms.  All one has to do is create a similarly-structured object and row-bind it to the existing \code{$smart.rules$for_usage} object (being careful to preserve the existing "law" attribute).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(
   term.map = NULL,
@@ -232,6 +228,8 @@ Invisibly, the class object with member \code{$data} modified to the original st
 \if{latex}{\out{\hypertarget{method-smart.data-use}{}}}
 \subsection{Method \code{use()}}{
 \code{$use} takes as input taxonomy terms and returns the fields in \code{$data} mapped to each term supplied.  The idea here is to provide a semantic method for retrieving data.
+
+When no arguments are supplied, the default is to return the fields mapped to existing terms.  Using \code{retain = ''} returns all values making it equivalent to \code{smart_obj$data}
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{smart.data$use(
   ...,
