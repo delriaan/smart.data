@@ -65,4 +65,4 @@ is.smart(smrt)
 # ~ pkgdown ----
 # usethis::use_pkgdown()
 # usethis::use_proprietary_license("Chionesu George")
-# pkgdown::build_site()
+# pkgdown::build_site(pkg = "pkg", override = list(destination = "../docs"))
