@@ -2,6 +2,7 @@
 # library(magrittr); library(stringi)
 library(data.table); library(purrr); library(stringi, include.only = "%s+%")
 library(book.of.utilities);
+
 orig.data <- mtcars;
 #
 # ~ PART I: Functionality Tests====
@@ -45,7 +46,7 @@ smrt$enforce.rules(for_transformation)$
 smrt$use(identifier)
 smrt$use(identifier, category, retain = disp, chatty = TRUE) # Should be identical to previous output
 
-debug(smrt$use)
+# debug(smrt$use)
 smrt$use(identifier, category, retain = c(hp, mpg), chatty = TRUE) # Should contain the previous output + 'mpg'
 smrt$use(omit = c(mpg), chatty = TRUE)
 smrt$use(identifier, category, retain = c(cyl, am), omit = c(mpg, am), chatty = TRUE) # Should NOT contain 'mpg', or 'am'
@@ -61,7 +62,7 @@ smrt$name <- "smart_cars"
 smrt$cache_mgr(action = add)
 get.smart(smart_cars)$use(retain = drat)
 is.smart(smrt)
-
+#
 # ~ pkgdown ----
 # usethis::use_pkgdown()
 # usethis::use_proprietary_license("Chionesu George")

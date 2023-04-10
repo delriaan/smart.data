@@ -8,6 +8,8 @@
 #' @importFrom data.table like %like% %ilike% %flike%
 #' @importFrom book.of.utilities unregex as.regex
 #' @importFrom stringi %s+%
+#' @importFrom utils hasName
+#'
 #' @export
 smart.data <-	{ R6::R6Class(
 	classname = "smart.data"
@@ -19,8 +21,6 @@ smart.data <-	{ R6::R6Class(
 		name = NULL,
 		#' @field id A unique ID for the object
 		id = NULL,
-		#' @field cache A shared access object via \code{\link[cachem]{cache_mem}} or external environment
-		cache = NULL,
 		#' @field smart.rules A list holding user-generated sets of rules
 		smart.rules = list(),
 		#' @description
@@ -28,8 +28,8 @@ smart.data <-	{ R6::R6Class(
 		print = function(){
 			message(sprintf("Smart Data, version %s", private$version));
 
-			if (!is_empty(self$smart.rules)){ message(c(
-				"Smart Rules:", imap_chr(self$smart.rules, ~sprintf("... %s [%s]", .y, attr(.x, "state") %||% "unknown"))
+			if (!purrr::is_empty(self$smart.rules)){ message(c(
+				"Smart Rules:", purrr::imap_chr(self$smart.rules, ~sprintf("... %s [%s]", .y, attr(.x, "state") %||% "unknown"))
 					) %>% paste(collapse = "\n"));
 			}
 			print(self$data);
@@ -45,18 +45,25 @@ smart.data <-	{ R6::R6Class(
 				if ("for_usage" %in% names(x$smart.rules)){
 					self$smart.rules$for_usage <- x$smart.rules$for_usage;
 				}
-			} else { private$orig.data <- copy(as.data.table(x)) }
+			} else { private$orig.data <- data.table::copy(data.table::as.data.table(x)) }
 
 			self$data <- setattr(copy(private$orig.data), "class", c(class(private$orig.data), "smart.data"));
 			self$name <- name;
 			self$id <- paste0(name, "_", data.table::address(self$data), "_", format(Sys.time(), "%Y%m%d%H%M%S"));
 			private$version <- packageVersion("smart.data");
 
-			if (!".___SMART___" %in% ls(globalenv(), all.names = TRUE)){
-				if (...length() == 0){ assign(".___SMART___", cachem::cache_layered(cachem::cache_mem(), cachem::cache_disk()), envir = globalenv())
-					} else { assign(".___SMART___", cachem::cache_layered(...), envir = globalenv())}
-				}
+			if (!hasName(rlang::pkg_env("smart.data"), ".___SMART___")){
+				rlang::env_unlock(rlang::pkg_env("smart.data"));
 
+				assign(
+					x = ".___SMART___"
+					, value = cachem::cache_layered(cachem::cache_mem(), ...)
+					, envir = rlang::pkg_env("smart.data")
+					);
+
+				rlang::env_lock(rlang::pkg_env("smart.data"));
+
+			}
 			invisible(self);
 		},
 		#' @description
@@ -74,8 +81,8 @@ smart.data <-	{ R6::R6Class(
 			}
 
 			self$smart.rules$for_naming <- .nms %>%
-					setattr("law", rlang::expr(setnames(self$data, old = !!unlist(.nms, use.names = FALSE), new = !!names(.nms), skip_absent = TRUE))) %>%
-					setattr("state", "pending");
+					data.table::setattr("law", rlang::expr(data.table::setnames(self$data, old = !!unlist(.nms, use.names = FALSE), new = !!names(.nms), skip_absent = TRUE))) %>%
+					data.table::setattr("state", "pending");
 
 			if (show){ message("Current naming rules:\n----------\n" %s+% paste(names(self$smart.rules$for_naming), self$smart.rules$for_naming, sep = " <- ", collapse = "\n"))}
 
@@ -104,7 +111,7 @@ smart.data <-	{ R6::R6Class(
 			# Check for pre-existing term map ====
 			.map_exists = hasName(self$smart.rules, "for_usage");
 
-			.default_map = { data.table(
+			.default_map = { data.table::data.table(
 				term = c("identifier", "demographic", "flag", "event.date", "category", "join.key")
 				, desc = { c(
 						"Identifies unique instances of a type of reference"
@@ -119,16 +126,16 @@ smart.data <-	{ R6::R6Class(
 				, key = "term"
 				)}
 
-			if (.map_exists) { .default_map <- rbindlist(list(.default_map[!(term %in% self$smart.rules$for_usage$term)], self$smart.rules$for_usage), use.names = TRUE) }
+			if (.map_exists) { .default_map <- data.table::rbindlist(list(.default_map[!(term %in% self$smart.rules$for_usage$term)], self$smart.rules$for_usage), use.names = TRUE) }
 
 			# Check to see if a naming rule exists: if so, the taxonomy fields need to follow the law of naming ====
 			if ("for_naming" %in% names(self$smart.rules)){
 				if (attr(self$smart.rules$for_naming, "state") == "pending"){
 					self$enforce.rules(for_naming, chatty = chatty)
 				}
-				if (!is_empty(term.map)){
-					term.map %<>% .[, fields := map(fields, ~{
-						stri_replace_all_fixed(
+				if (!purrr::is_empty(term.map)){
+					term.map %<>% .[, fields := purrr::map(fields, ~{
+						stringi::stri_replace_all_fixed(
 							.x
 							, pattern = self$smart.rules$for_naming
 							, replacement = names(self$smart.rules$for_naming)
@@ -139,12 +146,12 @@ smart.data <-	{ R6::R6Class(
 			}
 
 			# Validate and process 'term.map' ====
-			if (!is_empty(term.map)){
-				if (!is.data.table(term.map)){ setDT(term.map) }
+			if (!purrr::is_empty(term.map)){
+				if (!data.table::is.data.table(term.map)){ data.table::setDT(term.map) }
 				if (rlang::is_empty(intersect(c("term", "desc"), names(term.map)))){
 					stop("Error: each taxonomy must have the following fields provided: term, desc");
 				} else {
-					term.map[, c("term", "desc") := map(mget(c("term", "desc")), unlist)]
+					term.map[, c("term", "desc") := purrr::map(mget(c("term", "desc")), unlist)]
 				}
 
 				# term.map <- term.map[(if (!update){ !term %in% .default_map$term })]; # Add or update terms (anything remaining when not updating is added)
@@ -154,30 +161,30 @@ smart.data <-	{ R6::R6Class(
 			# Update the term map?
 			if (update){
 				term.map <- { list(.default_map[!(term %in% term.map$term)], term.map) %>%
-						rbindlist(use.names = TRUE, fill = TRUE)
+						data.table::rbindlist(use.names = TRUE, fill = TRUE)
 					} # Update or retain current/default
 			}
 
-			setkey(term.map, term);
+			data.table::setkey(term.map, term);
 
 			# Define/Update the taxonomy ====
 			.taxonomy = {
 					# Choose the values of 'term' to define/update
 					.term_list = { tcltk::tk_select.list(
 							choices = term.map$term
-							, preselect = if (update){ term.map[map_lgl(term.map$fields, ~!is_empty(unlist(.x)) %>% any()), term] }
+							, preselect = if (update){ term.map[purrr::map_lgl(term.map$fields, ~!purrr::is_empty(unlist(.x)) %>% any()), term] }
 							, multiple = TRUE
 							, title = "Choose one or more terms to map to fields in " %s+% self$name
 							) %>%
 							purrr::compact() %>% {
-								if (is_empty(.)){ message("Nothing selected: existing terms retained."): term.map$term } else { . }}
+								if (purrr::is_empty(.)){ message("Nothing selected: existing terms retained."): term.map$term } else { . }}
 						}
 
 					# Populate 'fields' for each term
 					term.map[
 						(term %in% .term_list)
-					][, fields := map2(term, fields, ~{
-						.out = if (update | any(is_empty(unlist(.y)))){
+					][, fields := purrr::map2(term, fields, ~{
+						.out = if (update | any(purrr::is_empty(unlist(.y)))){
 								tcltk::tk_select.list(
 									choices = names(self$data)
 									, title = sprintf("Choose term [%s] fields", .x)
@@ -185,18 +192,18 @@ smart.data <-	{ R6::R6Class(
 									, multiple = TRUE
 									)
 								} else { unlist(.y) }
-						if (is_empty(.out)){ NA } else { list(c(.out)) }
+						if (purrr::is_empty(.out)){ NA } else { list(c(.out)) }
 					})
 					][!is.na(fields)
-					][, fields := map(fields, unlist)];
+					][, fields := purrr::map(fields, unlist)];
 				}
 
 			self$smart.rules$for_usage <- .taxonomy[]
 
 			if (show){ print(self$smart.rules$for_usage) }
 
-			setattr(self$smart.rules$for_usage, "law", rlang::expr());
-			setattr(self$smart.rules$for_usage, "state", "pending");
+			data.table::setattr(self$smart.rules$for_usage, "law", rlang::expr());
+			data.table::setattr(self$smart.rules$for_usage, "state", "pending");
 
 			invisible(self);
 		},
@@ -226,9 +233,9 @@ smart.data <-	{ R6::R6Class(
 					}
 			}
 
-			walk(1:length(self$smart.rules$for_transformation), ~setattr(self$smart.rules$for_transformation[[.x]], "active", (.x %in% c(set.active)) | (set.active == 0)));
+			purrr::walk(1:length(self$smart.rules$for_transformation), ~data.table::setattr(self$smart.rules$for_transformation[[.x]], "active", (.x %in% c(set.active)) | (set.active == 0)));
 
-			if (any(map_lgl(self$smart.rules$for_transformation, ~attr(.x, "active")))){ setattr(self$smart.rules$for_transformation, "state", "pending") }
+			if (any(purrr::map_lgl(self$smart.rules$for_transformation, ~attr(.x, "active")))){ data.table::setattr(self$smart.rules$for_transformation, "state", "pending") }
 
 			invisible(self);
 		},
@@ -242,14 +249,14 @@ smart.data <-	{ R6::R6Class(
 			.rules = as.character(rlang::enexprs(...)) %>% .[!. == "for_usage"]
 
 
-			walk(.rules, ~{
+			purrr::walk(.rules, ~{
 				rule = self$smart.rules[[.x]];
 				if (purrr::is_empty(rule)){
 					if (tcltk::tk_messageBox(type = "yesno", message = sprintf("There is no rule '%s': continue?", .x), caption = "Missing Rule") == "no"){ return(invisible(self)) }
 					}
 
 				# Only enforce pending rules
-				if (purrr::is_empty(attr(rule, "state"))){ setattr(rule, "state", "pending") }
+				if (purrr::is_empty(attr(rule, "state"))){ data.table::setattr(rule, "state", "pending") }
 
 				if (attr(rule, "state") == "pending"){
 					# Before transform ...
@@ -259,14 +266,14 @@ smart.data <-	{ R6::R6Class(
 
 					if (.x %ilike% "transform"){
 						# Multiple transformations can exist in a single transformation rule.  Only active ones are needed.
-						.active = map_lgl(rule, attr, "active");
+						.active = purrr::map_lgl(rule, attr, "active");
 
-						if (any(.active)){ iwalk(rule[.active], ~{ message("\t ..." %s+% .y); eval(.x);  }) }
+						if (any(.active)){ purrr::iwalk(rule[.active], ~{ message("\t ..." %s+% .y); eval(.x);  }) }
 
 						.this = .x;
 
 						# Set active sub-rules to FALSE
-						walk(1:length(rule), ~setattr(self$smart.rules[[.this]][[.x]], "active", FALSE));
+						purrr::walk(1:length(rule), ~data.table::setattr(self$smart.rules[[.this]][[.x]], "active", FALSE));
 
 					} else { attr(rule, "law") %>% eval() }
 
@@ -298,9 +305,9 @@ smart.data <-	{ R6::R6Class(
 		reset = function(chatty = TRUE){
 			.reset = if (chatty){ tcltk::tk_messageBox(type = "yesno", message = "Reset data to the original values?", "You sure 'bout that?") } else { "no"}
 			if (.reset == "yes" | !chatty){
-				self$smart.rules <- self$smart.rules %>% imap(~{
-						.this = if (.y %ilike% "transform"){ map(.x, setattr, name = "active", value = TRUE) } else { .x }
-						setattr(.this, name = "state", value = "pending")
+				self$smart.rules <- self$smart.rules %>% purrr::imap(~{
+						.this = if (.y %ilike% "transform"){ purrr::map(.x, setattr, name = "active", value = TRUE) } else { .x }
+						data.table::setattr(.this, name = "state", value = "pending")
 					})
 				self$data <- private$orig.data;
 			}
@@ -320,10 +327,10 @@ smart.data <-	{ R6::R6Class(
 		#'
 		#' @return \code{self$data} with columns selected based on the terms supplied
 		use = function(..., subset = TRUE, retain = NULL, omit = NULL, show = FALSE, chatty = FALSE){
-			.taxonomy = self$smart.rules$for_usage %>% setkey(term);
+			.taxonomy = self$smart.rules$for_usage %>% data.table::setkey(term);
 			.this_data = self$data;
 			.checkout = function(.out){
-				if (!is_empty(.out)){
+				if (!purrr::is_empty(.out)){
 						if (length(.out) > 1){
 							paste(.out[-1], collapse = "|")
 						} else { .out }
@@ -343,10 +350,10 @@ smart.data <-	{ R6::R6Class(
 			.field_list	= .taxonomy[list(term = .term_list), on = "term", unlist(fields)];
 
 			# Process 'retain', 'omit', and '.field_list', and return the output ====
-			if (!is_empty(retain)){
+			if (!purrr::is_empty(retain)){
 				.field_list <- c(.field_list, unregex(as.regex(!!retain), .this_data)) %>% unique() }
 
-			if (!is_empty(omit)){
+			if (!purrr::is_empty(omit)){
 				.field_list <- .field_list[!.field_list %in% unregex(as.regex(!!omit), x = .this_data)] }
 
 			if (chatty){ message(paste(.field_list, collapse = ", ")) }
@@ -364,10 +371,10 @@ smart.data <-	{ R6::R6Class(
 		cache_mgr = function(action, chatty = FALSE, gcache = NULL, ...){
 			if (!"max.sz" %in% ls(private)){
 				private$max.sz <- stringi::stri_extract_all_regex(
-						system("systeminfo", intern = TRUE), "Avail.+ory.+", omit_no_match = TRUE, simplify = TRUE) %>%	.[!. == ""] %>%
-					stringi::stri_extract_all_regex("[0-9]", simplify = TRUE) %>%
-					as.vector() %>%
-					paste(collapse = "") %>%
+						system("systeminfo", intern = TRUE), "Avail.+ory.+", omit_no_match = TRUE, simplify = TRUE) %>%	.[!. == ""] |>
+					stringi::stri_extract_all_regex("[0-9]", simplify = TRUE) |>
+					as.vector() |>
+					paste(collapse = "") |>
 					as.integer() * 0.01 * (1024^2)
 			}
 
@@ -376,34 +383,31 @@ smart.data <-	{ R6::R6Class(
 					, rem.cache = any(as.character(substitute(action)) %ilike% "^(rem|unreg)")
 					, upd.cache = any(as.character(substitute(action)) %ilike% "^(upd|refr)")
 					) %>% .[which(.)]
-				} %>% names();
+				} |> names();
 
-			if (!exists(".___SMART___", envir = globalenv())){
-				assign(
-					".___SMART___"
-					, if (!rlang::is_empty(gcache)){ gcache } else { cachem::cache_mem(max_size = private$max.sz, ...) }
-					, envir = globalenv()
-					);
-			}
-			self$cache <- globalenv()[[".___SMART___"]];
-
-			add.cache = function(...){
-				if ((self$cache)$exists(self$name)){
-					message(sprintf("'%s' already exists in smart-cache", self$name))
-					} else {
-						if (chatty){ message("Adding %s to Smart Cache ..." %>% sprintf(self$name)) }
-						(self$cache)$set(self$name, self)
-					}
-			}
-
-			rem.cache = function(...){
-				if ((self$cache)$exists(self$name)){ (self$cache)$remove(self$name)
-					} else { message(sprintf("'%s' is not found in the smart-cache", self$name)) }
+			add.cache <- function(nm){
+				if (.___SMART___$exists(nm)){
+					message(sprintf("'%s' already exists in smart-cache", nm))
+				} else {
+					if (chatty){ message("Adding %s to Smart Cache ..." %>% sprintf(nm)) }
+					.___SMART___$set(nm, self)
 				}
+			}
 
-			upd.cache = function(...){ rem.cache(); add.cache(); }
+			rem.cache <- function(nm){
+				if (.___SMART___$exists(nm)){
+					.___SMART___$remove(nm)
+				} else {
+					message(sprintf("'%s' is not found in the smart-cache", nm))
+				}
+			}
 
-			do.call(logi_vec, args = list());
+			upd.cache = function(nm){
+				rlang::caller_env()$rem.cache(nm);
+				rlang::caller_env()$add.cache(nm);
+			}
+
+			do.call(logi_vec, args = list(nm = self$name));
 
 			if (chatty){ message("Cache object completed!")}
 			invisible(self);

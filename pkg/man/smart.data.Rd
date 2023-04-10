@@ -17,8 +17,6 @@ You will need to install related package \href{https://github.com/delriaan/book.
 
 \item{\code{id}}{A unique ID for the object}
 
-\item{\code{cache}}{A shared access object via \code{\link[cachem]{cache_mem}} or external environment}
-
 \item{\code{smart.rules}}{A list holding user-generated sets of rules}
 }
 \if{html}{\out{</div>}}

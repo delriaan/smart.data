@@ -1,10 +1,3 @@
-.onLoad <- function(libname, pkgname){
-	delayedAssign(x = ".___SMART___", value = cachem::cache_layered(cachem::cache_mem()), assign.env = .GlobalEnv)
-}
-
-.onUnload <- function(libpath){}
-
-#
 is.smart <- function(...){
 #' Check for Signs of Intelligence
 #'
@@ -60,7 +53,6 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 		}
 
 		if (hasName(env[[.x]], "cache")){
-			.temp$cache <- env[[.x]]$cache;
 			.temp$cache_mgr(action = upd);
 		}
 
@@ -95,8 +87,7 @@ get.smart <- function(..., list.only = FALSE){
 			}
 	} else { as.character(rlang::exprs(...)) }
 
-	invisible(purrr::imap(
-		purrr::set_names(.these)
-		, ~.___SMART___$get(.x)) %>% { if (length(.) == 1){ .[[1]] } else { . }}
-		);
+	.these <- purrr::map(purrr::set_names(.these), ~.___SMART___$get(.x));
+
+	if (length(.these) == 1){ .these[[1]] } else { .these }
 }

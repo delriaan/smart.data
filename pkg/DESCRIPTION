@@ -1,15 +1,20 @@
 Package: smart.data
 Title: Smart Data
+Description: Package \code{smart.data} provides semantic framework for referencing tabular data.
 Type: Package
-Version: 2.0.1
+Version: 2.1.0
 Author: Chionesu George <sapienti.Dei@outlook.com> [aut, cre]
 Maintainer: Chionesu George <sapienti.Dei@outlook.com>
 License: file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 Depends: R (>= 4.1.0)
-	, book.of.utilities (>= 1.0.0)
+Imports: purrr (< 1.0.0)
+	, book.of.utilities (>= 1.2.0)
+	, cachem
+	, stringi
 	, data.table
-	, purrr (< 1.0.0)
-Imports: cachem, stringi
+	, magrittr
+	, utils
+	, rlang
 NeedsCompilation: no
