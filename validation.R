@@ -51,6 +51,7 @@ smrt$use(identifier, category, retain = c(hp, mpg), chatty = TRUE) # Should cont
 smrt$use(omit = c(mpg), chatty = TRUE)
 smrt$use(identifier, category, retain = c(cyl, am), omit = c(mpg, am), chatty = TRUE) # Should NOT contain 'mpg', or 'am'
 smrt$use(retain = `*`, chatty = TRUE)
+smrt$use(retain = `*`, subset = cyl == 8 & carb == 4)
 smrt$use()
 
 # ~ PART IV: Taxonomy Inheritance ====

@@ -2,7 +2,7 @@ Package: smart.data
 Title: Smart Data
 Description: Package \code{smart.data} provides semantic framework for referencing tabular data.
 Type: Package
-Version: 2.1.0
+Version: 2.1.1
 Author: Chionesu George <sapienti.Dei@outlook.com> [aut, cre]
 Maintainer: Chionesu George <sapienti.Dei@outlook.com>
 License: file LICENSE

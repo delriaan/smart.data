@@ -53,7 +53,7 @@ You will need to install related package \href{https://github.com/delriaan/book.
 \subsection{Method \code{new()}}{
 Initialize the class object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$new(x, name = "new.data", ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$new(x, name = "new_data", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -266,7 +266,7 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 \subsection{Method \code{cache_mgr()}}{
 \code{$cache_mgr} adds the current object to the shared "smart" cache space (see \code{\link[cachem]{cache_layered}}).  The shared cache is layered as 'memory' followed by 'disk.'
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$cache_mgr(action, chatty = FALSE, gcache = NULL, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$cache_mgr(action, chatty = FALSE, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -275,8 +275,6 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 \item{\code{action}}{One of \code{register} or \code{unregister}}
 
 \item{\code{chatty}}{(logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.}
-
-\item{\code{gcache}}{A predefined \code{cache} object from package \code{cachem}.  If \code{NULL}, a memory-cache object is initiated using 10\% of available memory (unless overridden by values specified in argument \code{...})}
 
 \item{\code{...}}{Additional arguments to use when initializing a cache object}
 }

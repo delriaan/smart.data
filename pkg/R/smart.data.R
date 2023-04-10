@@ -38,7 +38,7 @@ smart.data <-	{ R6::R6Class(
 		#' @param x The input data
 		#' @param name The name for the smart class when used in smart functions
 		#' @param ... Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}}).  If none are provided, a composite cache is created of types \code{memory} and \code{disk}, both using defaults (see \code{\link[cachem]{cache_mem}} and \code{\link[cachem]{cache_disk}})
-		initialize = function(x, name = "new.data", ...){
+		initialize = function(x, name = "new_data", ...){
 			if (is.smart(x)){
 				private$orig.data <- copy(x$data);
 
@@ -48,8 +48,6 @@ smart.data <-	{ R6::R6Class(
 			} else { private$orig.data <- data.table::copy(data.table::as.data.table(x)) }
 
 			self$data <- setattr(copy(private$orig.data), "class", c(class(private$orig.data), "smart.data"));
-			self$name <- name;
-			self$id <- paste0(name, "_", data.table::address(self$data), "_", format(Sys.time(), "%Y%m%d%H%M%S"));
 			private$version <- packageVersion("smart.data");
 
 			if (!hasName(rlang::pkg_env("smart.data"), ".___SMART___")){
@@ -64,6 +62,20 @@ smart.data <-	{ R6::R6Class(
 				rlang::env_lock(rlang::pkg_env("smart.data"));
 
 			}
+
+			self$name <- { ifelse(
+				name %in% .___SMART___$keys()
+				, paste0(
+						name
+						, "_"
+						, which(grepl(name, length(.___SMART___$keys()))) |>
+								max() |>
+								stringi::stri_pad_left(width = 3, pad = "0")
+						)
+				, name
+				)}
+
+			self$id <- paste0(self$name, "_", data.table::address(self$data), "_", format(Sys.time(), "%Y%m%d%H%M%S"));
 			invisible(self);
 		},
 		#' @description
@@ -366,9 +378,8 @@ smart.data <-	{ R6::R6Class(
 		#'
 		#' @param action One of \code{register} or \code{unregister}
 		#' @param chatty (logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.
-		#' @param gcache A predefined \code{cache} object from package \code{cachem}.  If \code{NULL}, a memory-cache object is initiated using 10\% of available memory (unless overridden by values specified in argument \code{...})
 		#' @param ... Additional arguments to use when initializing a cache object
-		cache_mgr = function(action, chatty = FALSE, gcache = NULL, ...){
+		cache_mgr = function(action, chatty = FALSE, ...){
 			if (!"max.sz" %in% ls(private)){
 				private$max.sz <- stringi::stri_extract_all_regex(
 						system("systeminfo", intern = TRUE), "Avail.+ory.+", omit_no_match = TRUE, simplify = TRUE) %>%	.[!. == ""] |>

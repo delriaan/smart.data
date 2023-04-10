@@ -18,7 +18,7 @@ You will need to install related package book.of.utilities"><!-- mathjax --><scr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">smart.data</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.1</span>
       </span>
     </div>
 
@@ -95,7 +95,7 @@ You will need to install related package book.of.utilities"><!-- mathjax --><scr
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Initialize the class object.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/smart.data.html">smart.data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">x</span>, name <span class="op">=</span> <span class="st">"new.data"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/smart.data.html">smart.data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">x</span>, name <span class="op">=</span> <span class="st">"new_data"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -344,7 +344,7 @@ You will need to install related package book.of.utilities"><!-- mathjax --><scr
 <h3 id="method-cache-mgr-">Method <code>cache_mgr()</code><a class="anchor" aria-label="anchor" href="#method-cache-mgr-"></a></h3>
 <p><code>$cache_mgr</code> adds the current object to the shared "smart" cache space (see <code><a href="https://cachem.r-lib.org/reference/cache_layered.html" class="external-link">cache_layered</a></code>).  The shared cache is layered as 'memory' followed by 'disk.'</p><div class="section">
 <h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">smart.data</span><span class="op">$</span><span class="fu">cache_mgr</span><span class="op">(</span><span class="va">action</span>, chatty <span class="op">=</span> <span class="cn">FALSE</span>, gcache <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">smart.data</span><span class="op">$</span><span class="fu">cache_mgr</span><span class="op">(</span><span class="va">action</span>, chatty <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -355,10 +355,6 @@ You will need to install related package book.of.utilities"><!-- mathjax --><scr
 
 <dt><code>chatty</code></dt>
 <dd><p>(logical | TRUE) When <code>TRUE</code>, a confirmation dialog is invoked.</p></dd>
-
-
-<dt><code>gcache</code></dt>
-<dd><p>A predefined <code>cache</code> object from package <code>cachem</code>.  If <code>NULL</code>, a memory-cache object is initiated using 10% of available memory (unless overridden by values specified in argument <code>...</code>)</p></dd>
 
 
 <dt><code>...</code></dt>
