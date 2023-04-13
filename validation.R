@@ -7,7 +7,7 @@ orig.data <- mtcars;
 #
 # ~ PART I: Functionality Tests====
 smrt <- smart.data$
-	new(orig.data, "smart cars")$
+	new(orig.data, "smart_cars")$
 	naming.rule(MPG = "mpg", chatty = TRUE)$
 	taxonomy.rule()$
 	enforce.rules(for_naming)$
@@ -31,7 +31,7 @@ View(smrt$smart.rules$for_transformation) # List should be length five ()
 
 smrt$enforce.rules(for_usage, for_transformation, chatty = TRUE);
 
-smrt$smart.rules$for_transformation %>% map(attr, "active") # All results should be 'FALSE'
+smrt$smart.rules$for_transformation |> purrr::map(attr, "active") # All results should be 'FALSE'
 smrt$data # Column 'car_model' should only contain numbers and upper-case characters
 
 # ~ PART III: Using the Taxonomy and Resetting ====
@@ -44,7 +44,7 @@ smrt$enforce.rules(for_transformation)$
 
 
 smrt$use(identifier)
-smrt$use(identifier, category, retain = disp, chatty = TRUE) # Should be identical to previous output
+smrt$use(identifier, category, retain = disp, chatty = TRUE) # Should contain the previous output
 
 # debug(smrt$use)
 smrt$use(identifier, category, retain = c(hp, mpg), chatty = TRUE) # Should contain the previous output + 'mpg'

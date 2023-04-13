@@ -10,11 +10,12 @@ is.smart <- function(...){
 #'
 #' @export
 
-	purrr::imap(rlang::list2(...), ~{
-		c(smart.data_class_exists = any(class(.x)	%ilike% "smart")
-		, has_orig_data = !purrr::is_empty(.x$.__enclos_env__$private$orig.data)
-		) |> all(na.rm = TRUE)
-	}) |> unlist()
+	purrr::map(rlang::list2(...), \(x){
+		c(smart.data_class_exists = any(class(x)	%ilike% "smart")
+			, has_orig_data = !purrr::is_empty(x$.__enclos_env__$private$orig.data)
+			) |> all(na.rm = TRUE)
+		}) |>
+		unlist()
 }
 
 #
@@ -31,37 +32,41 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 
 	if (...length() == 0){ message("Nothing to do!"); return() }
 
-	env = substitute(env);
-	env = if (class(env) %in% c("call", "name")){ eval(env) } else { eval(str2lang(env)) }
-	queue = as.character(rlang::exprs(...));
+	env <- substitute(env);
+	env <- if (class(env) %in% c("call", "name")){ eval(env) } else { eval(str2lang(env)) }
 
-	purrr::walk(queue, ~{
-		.temp <- smart.data$new(env[[.x]]$data, env[[.x]]$name);
+	queue <- as.character(rlang::exprs(...));
+
+	.func <- function(i){
+		.temp <- smart.data$new(env[[i]]$data, env[[i]]$name);
 
 		# :: Xfer data
-		.temp$.__enclos_env__$private$orig.data <- env[[.x]]$.__enclos_env__$private$orig.data;
-		.temp$data <- env[[.x]]$data;
+		.temp$.__enclos_env__$private$orig.data <- env[[i]]$.__enclos_env__$private$orig.data;
+		.temp$data <- env[[i]]$data;
 
 		# :: Xfer smart.rules
-		.temp$smart.rules <- env[[.x]]$smart.rules;
+		.temp$smart.rules <- env[[i]]$smart.rules;
 
 		if ("for_transformation" %in% names(.temp$smart.rules)){
-			if (purrr::is_empty(attr(.temp$smart.rules$for_transformation, "state"))){ data.table::setattr(.temp$smart.rules$for_transformation, "state", "enforced") }
-			.temp$smart.rules$for_transformation %>% walk(~{
-					if (purrr::is_empty(attr(.x, "active"))){ data.table::setattr(.x, "state", FALSE) }
-				});
+			if (purrr::is_empty(attr(.temp$smart.rules$for_transformation, "state"))){
+				data.table::setattr(.temp$smart.rules$for_transformation, "state", "enforced")
+			}
+
+			purrr::walk(.temp$smart.rules$for_transformation, \(x) if (purrr::is_empty(attr(x, "active"))){ data.table::setattr(x, "state", FALSE) });
 		}
 
-		if (hasName(env[[.x]], "cache")){
+		if (hasName(env[[i]], "cache")){
 			.temp$cache_mgr(action = upd);
 		}
 
 		# :: Complete the xfer
-		if (chatty){ message("Preparing to upgrade " %s+% .x, appendLF = FALSE) }
-		assign(.x, .temp, envir = env);
+		if (chatty){ message("Preparing to upgrade " %s+% i, appendLF = FALSE) }
+		assign(i, .temp, envir = env);
 
 		if (chatty){ message(": Success!", appendLF = TRUE)}
-	});
+	}
+
+	purrr::walk(queue, .func);
 }
 
 #
@@ -87,7 +92,7 @@ get.smart <- function(..., list.only = FALSE){
 			}
 	} else { as.character(rlang::exprs(...)) }
 
-	.these <- purrr::map(purrr::set_names(.these), ~.___SMART___$get(.x));
+	.these <- purrr::map(purrr::set_names(.these), \(x) .___SMART___$get(x));
 
 	if (length(.these) == 1){ .these[[1]] } else { .these }
 }
