@@ -88,7 +88,7 @@ smart.data <-	{ R6::R6Class(
 			.nms = if (...length() == 0){
 							list(new = names(self$data), old = names(self$data))
 						} else {
-							rlang::exprs(..., .named = TRUE) |> purrr::lmap(\(x) list(new = names(x), old = unlist(x)))
+							rlang::exprs(..., .named = TRUE) %>% (\(x) list(new = names(x), old = unlist(x)))
 						}
 
 			self$smart.rules$for_naming <- .nms %>%
