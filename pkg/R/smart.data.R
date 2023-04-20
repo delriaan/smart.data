@@ -383,7 +383,7 @@ smart.data <-	{ R6::R6Class(
 			retain	<- substitute(retain) |> as.character() |> .checkout();
 			omit		<- substitute(omit) |> as.character() |> .checkout();
 
-			.field_list	= .taxonomy[list(term = .term_list), on = "term", unlist(fields)];
+			.field_list	<- .taxonomy[list(term = .term_list), on = "term", unlist(fields)];
 
 			# Process 'retain', 'omit', and '.field_list', and return the output ====
 			if (!purrr::is_empty(retain)){
@@ -394,6 +394,7 @@ smart.data <-	{ R6::R6Class(
 				.field_list <- .field_list[!.field_list %in% unregex(as.regex(!!omit), x = .this_data)]
 			}
 
+			.field_list <- unique(.field_list);
 			if (chatty){ message(paste(.field_list, collapse = ", ")) }
 
 			# Return 'self$data' selected by taxonomy fields
