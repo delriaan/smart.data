@@ -67,7 +67,7 @@ smart.data <-	{ R6::R6Class(
 				, paste0(
 						name
 						, "_"
-						, which(grepl(name, length(.___SMART___$keys()))) |>
+						, which(grepl(name, .___SMART___$keys())) |>
 								max() |>
 								stringi::stri_pad_left(width = 3, pad = "0")
 						)
