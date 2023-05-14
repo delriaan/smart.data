@@ -1,5 +1,9 @@
-# Introduction 
+# Description
+
 `smart.data` is an R6 class that facilitates the manipulation of a data set by providing rules-based operations and taxonomical column reference.
 
-# Getting Started
-You will need to install related package [book.of.utilities](https://github.com/delriaan/book.of.utilities)
+# Installation
+
+- `remotes::install_github("delriaan/book.of.utilities", subdir = "pkg")`
+
+- `remotes::install_github("delriaan/smart.data", subdir = "pkg")`
