@@ -98,10 +98,10 @@ Before invisibly returning the class object, a list is saved to \code{self$smart
 
 Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with the following required fields:
 \describe{
- \item{term}{The name of the taxonomy term.  Defaults are \code{c("identifier", "event.date", "flag", "demographic", "category", "join.key")}}
- \item{desc}{A description for each term's interpretation or context for usage }
- \item{rule}{A quoted expression containing the rules to be enforced on fields mapped to the current term. The variable for the field must be expressed as 'x' or '.x' and the field name as 'y' or '.y': the law that is enforced exists in the context of \code{\link[purrr]{imap}}}
-\item{fields}{The fields in \code{$data} mapped to the term}
+\item{term}{The name of the taxonomy term.  Defaults are \code{c("identifier", "event.date", "flag", "demographic", "category", "join.key")}}
+\item{desc}{A description for each term's interpretation or context for usage }
+\item{rule}{A quoted expression containing the rules to be enforced on fields mapped to the current term. The variable for the field must be expressed as 'x' or '.x' and the field name as 'y' or '.y': the law that is enforced exists in the context of \code{\link[purrr]{imap}}}
+\item{fields \code{(optional)}}{The fields in \code{$data} mapped to the term}
 }
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(
@@ -122,8 +122,6 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
 \item{\code{show}}{(logical|FALSE) Should the rule be shown?}
 
 \item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
-
-\item{\code{new.terms}}{(data.table|NULL) A \code{link[data.table]{data.table}} object of additional taxonomy rules to add to existing ones.}
 }
 \if{html}{\out{</div>}}
 }
