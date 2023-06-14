@@ -21,8 +21,8 @@ smart.data <-	{ R6::R6Class(
 		name = NULL,
 		#' @field id A unique ID for the object
 		id = NULL,
-		#' @field smart.rules A list holding user-generated sets of rules
-		smart.rules = list(),
+		#' @field smart.rules An environment holding user-generated sets of rules
+		smart.rules = NULL,
 		#' @description
 		#' \code{print} Prints the contents of \code{$data} before invisibly returning the class object
 		print = function(){
@@ -41,6 +41,12 @@ smart.data <-	{ R6::R6Class(
 		#' @param name The name for the smart class when used in smart functions
 		#' @param ... Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}}).  If none are provided, a composite cache is created of types \code{memory} and \code{disk}, both using defaults (see \code{\link[cachem]{cache_mem}} and \code{\link[cachem]{cache_disk}})
 		initialize = function(x, name = "new_data", ...){
+			self$smart.rules <- rlang::env(
+				for_naming = list()
+				, for_transformation = list()
+				, for_usage = list()
+				)
+
 			if (!hasName(rlang::pkg_env("smart.data"), ".___SMART___")){
 				rlang::env_unlock(rlang::pkg_env("smart.data"));
 
