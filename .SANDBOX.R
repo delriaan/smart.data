@@ -7,7 +7,7 @@ self$smart.rules <- rlang::env(
 	, for_usage = new.env()
 	)
 #
-# :: $enforce.rules() <IN-PROGRESS> ----
+# :: $enforce.rules() <COMPLETE> ----
 self$enforce.rules = function(..., chatty = FALSE){
 			.rules = intersect(self$smart.rules %$% ls(), as.character(rlang::enexprs(...)))
 
@@ -30,7 +30,7 @@ self$enforce.rules = function(..., chatty = FALSE){
 		}
 # debug(self$enforce.rules)
 #
-# :: $naming.rule() <IN-PROGRESS> ----
+# :: $naming.rule() <COMPLETE> ----
 # Class Definition
 name_map <- { setClass(
 	Class = "name_map"
@@ -269,3 +269,36 @@ use(category, retain=c(slate)) %>% print()
 use(omit=pink) %>% print()
 use(omit=c(pink, orchid)) %>% print()
 
+
+# :: $reset() <PENDING> ----
+reset = function(replay = FALSE, chatty = TRUE){
+	.reset = if (chatty){
+		tcltk::tk_messageBox(type = "yesno", message = "Reset data to the original values?", "You sure 'bout that?")
+	} else { "no" }
+
+	if (.reset == "yes" | !chatty){
+		# Reset nameing rules
+		self$smart.rules$for_naming@state <<- "pending"
+		self$smart.rules$for_naming@law <<- NULL
+		self$smart.rules$for_naming@history <<- list()
+
+		# Reset taxonomy
+			purrr::iwalk(self$smart.rules$for_usage %$% mget(ls()), \(x, y){
+				x@term <- rlang::expr(!!y)
+				x@desc <- character()
+				x@fields <- character()
+				x@law <- TRUE
+				x@state <- "enforced"
+				self$smart.rules$for_usage[[y]] <<- x
+			})
+
+		# Reset data
+		self$data <<- private$orig.data;
+
+		if (replay){
+			message("Under development")
+		}
+	}
+
+	invisible(self);
+}
