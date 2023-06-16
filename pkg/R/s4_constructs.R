@@ -32,6 +32,7 @@ setMethod("initialize", "taxonomy"
 		.Object
 	})
 
+#' @export
 setMethod("as.list", "taxonomy"
 	, function(x, ...){
 			lapply(getSlots("taxonomy") |> names() |> rlang::set_names()
@@ -126,6 +127,7 @@ as.name_map <- function(x){
 	name_map(name_map = x$name_map, law = x$law)
 }
 
+#' @export
 setMethod("as.list", "name_map"
 	, function(x, ...){
 		lapply(getSlots("name_map") |> names() |> rlang::set_names()

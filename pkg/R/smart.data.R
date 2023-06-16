@@ -101,32 +101,24 @@ smart.data <-	{ R6::R6Class(
 		naming.rule = function(..., show = FALSE){
 			new_map <- rlang::dots_list(..., .named = TRUE, .ignore_empty = "all")
 
-			cur_law <- if (!rlang::is_empty(self$smart.rules$for_naming)){
-				self$smart.rules$for_naming@law
-			} else { NULL }
+			cur_map <- self$smart.rules$for_naming
 
-			cur_map <- if (rlang::is_empty(cur_law)){
-					rlang::set_names(names(self$data)) |> as.list()
-				} else {
-					self$smart.rules$for_naming |>
-						attr("history") %>% .[1] |>
-						rlang::set_names() |>
-						as.list()
-				}
-
-			new_map %<>% .[unlist(.) %in% names(cur_map)]
+			new_map %<>% .[unlist(.) %in% names(cur_map@name_map)]
 
 			if (rlang::is_empty(new_map)){
-				stop("None of the old names provided are found in existing data field names")
+				message("None of the old names provided are found in existing data field names")
+				return(invisible(self))
 			}
 
-			new_map <- (\(x, y){ names(x)[unlist(y) %in% unlist(x)] <- names(y); x })(cur_map, new_map)
+			new_map <- (\(x, y){
+				names(x)[unlist(y) %in% unlist(x)] <- names(y); x
+			})(cur_map@name_map, new_map)
 
 			self$smart.rules$for_naming <- {
 				name_map(name_map = new_map) |>
 					data.table::setattr(
 						"history"
-						, data.table::rbindlist(list(new_map, cur_map), use.names = FALSE) |> unique()
+						, data.table::rbindlist(list(new_map, cur_map@name_map), use.names = FALSE) |> unique()
 						)
 			}
 
@@ -306,19 +298,29 @@ smart.data <-	{ R6::R6Class(
 			if (.reset){
 				self$capture();
 
-				# Reset naming rules
-				self$smart.rules$for_naming <- NULL
-
-				# Reset taxonomy
-				self$smart.rules$for_usage %$% rm(list = ls())
+				private$history %$% mget("init") |>
+					purrr::iwalk(\(x, y){
+						purrr::iwalk(x, \(i, j){
+							if (grepl("usage", j)){
+								purrr::imap(i, \(ii, jj) as.taxonomy(ii) ) |>
+									list2env(envir = self$smart.rules$for_usage)
+								self$taxonomy.rule(chatty = FALSE)$enforce.rules(for_usage)
+							} else {
+								self$smart.rules$for_naming <- as.name_map(i)
+								smrt$smart.rules$for_usage |> ls() |>
+									purrr::walk(\(i){
+										smrt$smart.rules$for_usage[[i]]@state <- "pending"
+									})
+							}
+							self$enforce.rules(for_naming, for_usage)
+						})
+					})
 
 				# Reset data
 				self$data <- private$orig.data;
 
 				# Replay history
 				if (replay){
-					message("Under development");
-
 					private$history %$% mget(ls()) |>
 						purrr::iwalk(\(x, y){
 							message(sprintf("Replaying `%s`: ", y))
@@ -469,28 +471,29 @@ smart.data <-	{ R6::R6Class(
 					if (is.environment(x)){
 						f(x %$% mget(ls()), iter+1)
 					} else {
-						slotNames(x) |>
-						rlang::set_names() |>
-						purrr::imap(\(i, j){
-							ex <- rlang::expr(`@`(x, !!rlang::sym(i)))
-							rlang::expr_text(eval(ex)) |> rlang::parse_expr()
-						})
+						as.list(x)
 					}
 				})
 			}
 
 			# Labeling function
 			hist_name <- \(){
-				sprintf(
-					"hist_%s"
-					, rlang::env_names(private$history) |> length() |>
-						(`+`)(1) |>
-						stringi::stri_pad_left(width = 3, pad = "0")
-				)
+				if (all(names(smrt$smart.rules$for_naming@name_map) %in% names(self$data))){
+					"init_hist"
+				} else {
+					sprintf(
+						"hist_%s"
+						, rlang::env_names(private$history) |> length() |>
+							(`+`)(1) |>
+							stringi::stri_pad_left(width = 3, pad = "0")
+						)
+				}
 			}
-
 			# Execution
-			assign(hist_name(), self$smart.rules %$% mget(ls()) |> f(), envir = private$history)
+			assign(hist_name()
+			 , self$smart.rules %$% mget(ls()) |> f()
+			 , envir = private$history
+			 )
 		}
 	)}
 	, private = { list(orig.data = NULL, version = NULL, history = NULL)}
