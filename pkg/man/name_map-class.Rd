@@ -20,8 +20,6 @@ Smart Naming Constructor
 
 \item{\code{law}}{A quoted expression that, when executed, will invoke \code{\link[data.table]{setnames}} for compatibility with \code{\link{smart.data}} method \code{$enforce.rules()}}
 
-\item{\code{history}}{A list holding the history of name changes on each invocation of \code{$naming.rule()}}
-
 \item{\code{state}}{A string indicating whether the name map has been processed by \code{\link{smart.data}} method \code{$enforce.rules()}}
 }}
 

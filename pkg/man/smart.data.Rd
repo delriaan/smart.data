@@ -188,7 +188,7 @@ Invisibly, the class object with member \code{$data} modified according to the r
 \subsection{Method \code{reset()}}{
 \code{$reset} restores the object \code{$data} to the original value supplied when the class was initiated.  Rules are set to a state of "pending", and transformation rules are set as inactive (\code{active = FALSE})
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(replay = FALSE, chatty = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(replay = FALSE, safe = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -196,7 +196,7 @@ Invisibly, the class object with member \code{$data} modified according to the r
 \describe{
 \item{\code{replay}}{(logical | TRUE) When \code{TRUE}, captured history is executed to reproduce the last saved state.}
 
-\item{\code{chatty}}{(logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.}
+\item{\code{safe}}{(logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.}
 }
 \if{html}{\out{</div>}}
 }
@@ -212,14 +212,7 @@ Invisibly, the class object with member \code{$data} modified to the original st
 
 When no arguments are supplied, the default is to return the fields mapped to existing terms.  Using \code{retain = ''} returns all values making it equivalent to \code{smart_obj$data}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$use(
-  ...,
-  subset = TRUE,
-  retain = NULL,
-  omit = NULL,
-  show = FALSE,
-  chatty = FALSE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$use(..., subset = TRUE, retain, omit, show = FALSE, chatty = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -7,10 +7,10 @@
 as.taxonomy(x)
 }
 \arguments{
-\item{x}{A list with named elements the same as the slots}
+\item{x}{A list, JSON string, data.* object with named elements the same as the slots in class \code{\link{taxonomy}}}
 }
 \value{
-An object of class "taxonomy"
+Objects of class "taxonomy"
 }
 \description{
 Taxonomy Coercion

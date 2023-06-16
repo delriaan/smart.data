@@ -22,7 +22,7 @@ Smart Taxonomy Constructor
 
 \item{\code{fields}}{One or more strings indicating the fields in \code{smart.data$data} that map to the taxonomy term}
 
-\item{\code{law}}{A logical constant only provided for compatibility with \code{\link{smart.data}} method \code{$enforce.rules()}}
+\item{\code{law}}{Passively set: used by \code{\link{smart.data}} method \code{$enforce.rules()}}
 
 \item{\code{state}}{A string indicating whether the taxonomy term has been processed by \code{\link{smart.data}} method \code{$enforce.rules()}}
 }}
