@@ -1,18 +1,29 @@
 # library(smart.data)
 # library(magrittr); library(stringi)
-library(data.table); library(purrr); library(stringi, include.only = "%s+%")
+library(data.table); library(purrr);
 library(book.of.utilities);
+library(magrittr);
+library(stringi, include.only = "%s+%")
 
-orig.data <- mtcars;
+orig_data <- mtcars;
+data_names <- (\(x) rlang::set_names(x, toupper(x)))(names(mtcars))
+
 #
 # ~ PART I: Functionality Tests====
 smrt <- smart.data$
-	new(orig.data, "smart_cars")$
-	naming.rule(MPG = "mpg", chatty = TRUE)$
+	new(x = orig_data, name = "smart_cars")$
+	naming.rule(!!!data_names, chatty = TRUE)
+	enforce.rules(for_naming)
+
+names(smrt$data)
+smrt$smart.rules$for_naming@history
+smrt$smart.rules$for_naming@law
+smrt$smart.rules$for_naming@state
+
+
 	taxonomy.rule()$
-	enforce.rules(for_naming)$
 	transformation.rule(
-		add_col = this.data[, car_model := rownames(orig.data)[1:nrow(this.data)]]
+		add_col = this.data[, car_model := rownames(orig_data)[1:nrow(this.data)]]
 		, subset = this.data <<- this.data[1:10, ]
 		, update = TRUE
 		)$

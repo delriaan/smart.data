@@ -17,14 +17,13 @@ You will need to install related package \href{https://github.com/delriaan/book.
 
 \item{\code{id}}{A unique ID for the object}
 
-\item{\code{smart.rules}}{A list holding user-generated sets of rules}
+\item{\code{smart.rules}}{An environment holding user-generated sets of rules}
 }
 \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-smart.data-print}{\code{smart.data$print()}}
 \item \href{#method-smart.data-new}{\code{smart.data$new()}}
 \item \href{#method-smart.data-naming.rule}{\code{smart.data$naming.rule()}}
 \item \href{#method-smart.data-taxonomy.rule}{\code{smart.data$taxonomy.rule()}}
@@ -34,18 +33,9 @@ You will need to install related package \href{https://github.com/delriaan/book.
 \item \href{#method-smart.data-reset}{\code{smart.data$reset()}}
 \item \href{#method-smart.data-use}{\code{smart.data$use()}}
 \item \href{#method-smart.data-cache_mgr}{\code{smart.data$cache_mgr()}}
+\item \href{#method-smart.data-capture}{\code{smart.data$capture()}}
 \item \href{#method-smart.data-clone}{\code{smart.data$clone()}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-smart.data-print"></a>}}
-\if{latex}{\out{\hypertarget{method-smart.data-print}{}}}
-\subsection{Method \code{print()}}{
-\code{print} Prints the contents of \code{$data} before invisibly returning the class object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$print()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-smart.data-new"></a>}}
@@ -104,12 +94,7 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
 \item{fields \code{(optional)}}{The fields in \code{$data} mapped to the term}
 }
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(
-  term.map = NULL,
-  update = FALSE,
-  show = FALSE,
-  chatty = FALSE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(term.map = NULL, show = FALSE, chatty = FALSE, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -117,11 +102,11 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
 \describe{
 \item{\code{term.map}}{(NULL) A 2D tabular object that maps terms to rules -> X ~ term<character[]> + desc<character[]> + rule<language[]> (see section 'Term Map')}
 
-\item{\code{update}}{(logical|TRUE) Should the existing map be updated via interactive selection?}
-
 \item{\code{show}}{(logical|FALSE) Should the rule be shown?}
 
 \item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
+
+\item{\code{...}}{Not used}
 }
 \if{html}{\out{</div>}}
 }
@@ -205,12 +190,14 @@ Invisibly, the class object with member \code{$data} modified according to the r
 \subsection{Method \code{reset()}}{
 \code{$reset} restores the object \code{$data} to the original value supplied when the class was initiated.  Rules are set to a state of "pending", and transformation rules are set as inactive (\code{active = FALSE})
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(chatty = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(replay = FALSE, chatty = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{replay}}{(logical | TRUE) When \code{TRUE}, captured history is executed to reproduce the last saved state.}
+
 \item{\code{chatty}}{(logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.}
 }
 \if{html}{\out{</div>}}
@@ -278,6 +265,16 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-smart.data-capture"></a>}}
+\if{latex}{\out{\hypertarget{method-smart.data-capture}{}}}
+\subsection{Method \code{capture()}}{
+\code{$capture} captures the current state of objects in \code{$smart.rules} and saves distinct entries in \code{private$history}
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$capture()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-smart.data-clone"></a>}}
