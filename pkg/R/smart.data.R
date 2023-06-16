@@ -92,8 +92,7 @@ smart.data <-	{ R6::R6Class(
 		#'
 		#' @return Before invisibly returning the class object, a list is saved to \code{self$smart.rules$for_naming} containing derived objects used by attribute "law": the expression representing the actions to take when enforced
 		naming.rule = function(..., show = FALSE){
-			.nms <- rlang::dots_list(..., .named = TRUE)
-			if ("rn" %in% names(self$data)){ .nms <- c("rn", .nms) }
+			.nms <- rlang::dots_list(..., .named = TRUE, .ignore_empty = "all")
 
 			cur_law <- if (!rlang::is_empty(self$smart.rules$for_naming)){
 				if (self$smart.rules$for_naming@state == "pending"){
@@ -103,17 +102,17 @@ smart.data <-	{ R6::R6Class(
 			} else { NULL }
 
 			cur_names <- if (rlang::is_empty(cur_law)){
-				rlang::set_names(names(self$data)) |> as.list()
-			} else {
-				self$smart.rules$for_naming@history |> lapply(\(x) x[1]) |> as.list()
-			}
+					rlang::set_names(names(self$data)) |> as.list()
+				} else {
+					self$smart.rules$for_naming@history |> lapply(\(x) x[1]) |> as.list()
+				}
 
 			new_law <- { rlang::expr(data.table::setnames(
 				x = self$data
 				, old = !!unlist(.nms, use.names = FALSE)
 				, new = !!names(.nms)
 				, skip_absent = TRUE
-			))
+				))
 			}
 
 			self$smart.rules$for_naming <- {
@@ -139,12 +138,11 @@ smart.data <-	{ R6::R6Class(
 		#'	\item{fields \code{(optional)}}{The fields in \code{$data} mapped to the term}
 		#' }
 		#'
-		#' @param term.map (NULL) A 2D tabular object that maps terms to rules -> X ~ term<character[]> + desc<character[]> + rule<language[]> (see section 'Term Map')
+		#' @param ... (\code{\link[rlang]{dots_list}}) A list of taxonomy objects created with \code{\link{taxonomy}}
 		#' @param show (logical|FALSE) Should the rule be shown?
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
-		#' @param ... Not used
-		taxonomy.rule = function(term.map = NULL, show = FALSE, chatty = FALSE, ...){
-			term.map <- purrr::keep(term.map, is.taxonomy)
+		taxonomy.rule = function(..., show = FALSE, chatty = FALSE){
+			term.map <- purrr::keep(rlang::dots_list(...,.named = TRUE, .ignore_empty = "all"), is.taxonomy)
 
 			# Check for pre-existing term map ====
 			default_taxonomy <- self$smart.rules$for_usage %$% mget(ls())
@@ -157,28 +155,35 @@ smart.data <-	{ R6::R6Class(
 
 			# Update the taxonomy, possibly interactively ====
 			(if (.map_exists){
-				if (!rlang::is_empty(term.map)){
-					purrr::list_merge(default_taxonomy, !!!term.map)
-				} else { default_taxonomy }
-			} else {
-				if (!rlang::is_empty(term.map)){
+					if (!rlang::is_empty(term.map)){
+						purrr::list_assign(default_taxonomy, !!!term.map)
+					} else {
+						default_taxonomy
+					}
+				} else if (!rlang::is_empty(term.map)){
 					term.map
 				} else {
 					stop("At least one element of `term.map` must be of class 'taxonomy'")
-				}
-			}) |>
-				lapply(\(x){ x@fields |> as.character() |> unique() |> as.list() }) |>
-				(\(x){ if (interactive()){ listviewer::jsonedit_gadget(x) } else { x } })() |>
-				purrr::compact() |>
-				purrr::iwalk(\(x, y){
-					if (!rlang::is_empty(unlist(x))){
-						# Assign user selections
-						self$smart.rules$for_usage[[y]]@fields <<- unlist(x)
+				}) |> (\(x){
+					field_list <- purrr::map(x, \(i) i@fields |> unlist())
 
-						# Update based on naming rules
-						private$update.taxonomy(!!y)
+					if (interactive()){
+						field_list <- listviewer::jsonedit_gadget(field_list)
 					}
-				})
+
+					purrr::iwalk(field_list, \(i, j){
+						i <- unlist(i) |> as.character()
+						if (length(i) > 0){
+							x[[j]]@fields <- i
+
+							# Assign user selections
+							assign(j, x[[j]], envir = self$smart.rules$for_usage)
+
+							# Update based on naming rules
+							private$update.taxonomy(!!j)
+						}
+					})
+				})()
 
 			if (show){ print(self$smart.rules$for_usage %$% mget(ls())) }
 

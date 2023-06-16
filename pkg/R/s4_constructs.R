@@ -20,14 +20,14 @@ taxonomy <- {
 		, slots = list(
 				term = "language"
 				, desc = "character"
-				, fields = "vector"
+				, fields = "character"
 				, law = "logical"
 				, state = "character"
 				)
 		, prototype = list(
 				term = rlang::expr(NULL)
 				, desc = "~"
-				, fields = vector(mode = "character", length = 1L)
+				, fields = ""
 				, law = TRUE
 				, state = "pending"
 				)
@@ -39,7 +39,7 @@ taxonomy <- {
 #' @param x An object of class "taxonomy" created with \code{link{taxonomy}}
 #' @return A logical scalar
 #' @export
-is.taxonomy <- function(x) "taxonomy" %in% class(x)
+is.taxonomy <- function(x) {"taxonomy" %in% class(x)}
 
 #' Taxonomy Coercion
 #'

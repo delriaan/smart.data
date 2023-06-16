@@ -94,19 +94,17 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
 \item{fields \code{(optional)}}{The fields in \code{$data} mapped to the term}
 }
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(term.map = NULL, show = FALSE, chatty = FALSE, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(..., show = FALSE, chatty = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{term.map}}{(NULL) A 2D tabular object that maps terms to rules -> X ~ term<character[]> + desc<character[]> + rule<language[]> (see section 'Term Map')}
+\item{\code{...}}{(\code{\link[rlang]{dots_list}}) A list of taxonomy objects created with \code{\link{taxonomy}}}
 
 \item{\code{show}}{(logical|FALSE) Should the rule be shown?}
 
 \item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
-
-\item{\code{...}}{Not used}
 }
 \if{html}{\out{</div>}}
 }

@@ -5,14 +5,15 @@ library(book.of.utilities);
 library(magrittr);
 library(stringi, include.only = "%s+%")
 
-orig_data <- mtcars;
+orig_data <- mtcars
 data_names <- (\(x) rlang::set_names(x, toupper(x)))(names(mtcars))
 
 #
 # ~ PART I: Functionality Tests====
 smrt <- smart.data$
 	new(x = orig_data, name = "smart_cars")$
-	naming.rule(!!!data_names, chatty = TRUE)
+	# smrt$
+	naming.rule(!!!data_names)$
 	enforce.rules(for_naming)
 
 names(smrt$data)
@@ -20,17 +21,17 @@ smrt$smart.rules$for_naming@history
 smrt$smart.rules$for_naming@law
 smrt$smart.rules$for_naming@state
 
-
-	taxonomy.rule()$
-	transformation.rule(
-		add_col = this.data[, car_model := rownames(orig_data)[1:nrow(this.data)]]
-		, subset = this.data <<- this.data[1:10, ]
-		, update = TRUE
-		)$
-	enforce.rules(for_transformation)
-
-smrt$taxonomy.rule(update = TRUE)
-smrt$use(identifier, category)
+smrt$taxonomy.rule(
+	identifier = new("taxonomy", term = rlang::sym("identifier"), desc = "Identifies unique instances of a type of reference")
+	, flag = new("taxonomy", term = rlang::sym("flag"), desc = "Logical indicator")
+	, demographic = new("taxonomy", term = rlang::sym("demographic"), desc = "Demographic details such as name, date of birth, race, gender")
+	, category = new("taxonomy", term = rlang::sym("category"), desc = "Indicates a categorical variable")
+	, event.date = new("taxonomy", term = rlang::sym("event.date"), desc = "The event dates or duration boundary dates")
+	, join.key = new("taxonomy", term = rlang::sym("join.key"), desc = "Indicates the field(s) to use for 'data.table' joins")
+	)
+smrt$enforce.rules(for_usage)
+smrt$smart.rules$for_usage %$% mget(ls())
+smrt$use()
 #
 # ~ PART II: Amending the Transformation Rule =====
 smrt$transformation.rule(
