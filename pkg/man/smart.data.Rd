@@ -21,13 +21,19 @@ You will need to install related package \href{https://github.com/delriaan/book.
 }
 \if{html}{\out{</div>}}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{get.history}}{Returns the saved history from calls to \code{$capture()}}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-smart.data-new}{\code{smart.data$new()}}
 \item \href{#method-smart.data-naming.rule}{\code{smart.data$naming.rule()}}
 \item \href{#method-smart.data-taxonomy.rule}{\code{smart.data$taxonomy.rule()}}
-\item \href{#method-smart.data-transformation.rule}{\code{smart.data$transformation.rule()}}
 \item \href{#method-smart.data-enforce.rules}{\code{smart.data$enforce.rules()}}
 \item \href{#method-smart.data-set.private}{\code{smart.data$set.private()}}
 \item \href{#method-smart.data-reset}{\code{smart.data$reset()}}
@@ -110,37 +116,6 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-smart.data-transformation.rule"></a>}}
-\if{latex}{\out{\hypertarget{method-smart.data-transformation.rule}{}}}
-\subsection{Method \code{transformation.rule()}}{
-\code{$transformation.rule()} updates class field \code{$data}.  Rules should be provided as quoted expressions. If given as key-value pairs, each key will print to console as a message during enforcement (regardless of the value of argument \code{chatty}). Any loops or other control-of-flow should be defined here, and the object of transformation must use the symbol \code{this.data} and scoped assignment operator \code{<<-} (e.g. \code{this.data <<- 'expression'})
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$transformation.rule(
-  ...,
-  set.active = 0,
-  show = FALSE,
-  chatty = FALSE,
-  update = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Quoted expression containing the code that execute the desired transformations  If names are provided (e.g., does_this = quote(...)), the name will be printed to console if the rule enforcement argument \code{chatty} is |code{TRUE}}
-
-\item{\code{set.active}}{(integer[]) When provided, the indices of \code{self$smart.rules$for_transformation} that should be set to 'active': other indices are set to 'inactive'}
-
-\item{\code{show}}{(logical|FALSE) Should the rule be shown?}
-
-\item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
-
-\item{\code{update}}{(logical|FALSE) Should provided rules function as updates?}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-smart.data-enforce.rules"></a>}}
 \if{latex}{\out{\hypertarget{method-smart.data-enforce.rules}{}}}
 \subsection{Method \code{enforce.rules()}}{
@@ -188,14 +163,12 @@ Invisibly, the class object with member \code{$data} modified according to the r
 \subsection{Method \code{reset()}}{
 \code{$reset} restores the object \code{$data} to the original value supplied when the class was initiated.  Rules are set to a state of "pending", and transformation rules are set as inactive (\code{active = FALSE})
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(replay = FALSE, safe = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(safe = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{replay}}{(logical | TRUE) When \code{TRUE}, captured history is executed to reproduce the last saved state.}
-
 \item{\code{safe}}{(logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.}
 }
 \if{html}{\out{</div>}}
@@ -212,7 +185,14 @@ Invisibly, the class object with member \code{$data} modified to the original st
 
 When no arguments are supplied, the default is to return the fields mapped to existing terms.  Using \code{retain = ''} returns all values making it equivalent to \code{smart_obj$data}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$use(..., subset = TRUE, retain, omit, show = FALSE, chatty = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$use(
+  ...,
+  subset = TRUE,
+  retain = NULL,
+  omit = NULL,
+  show = FALSE,
+  chatty = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -222,9 +202,9 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 
 \item{\code{subset}}{A list of quoted expressions that will row-wise filter the data using \code{\link[data.table]{data.table}} syntax}
 
-\item{\code{retain}}{A vector of strings or symbols denoting the fields to retain in the output.  Pattern-matching is supported}
+\item{\code{retain}}{A vector of strings denoting the fields to retain in the output.  Pattern-matching is supported}
 
-\item{\code{omit}}{A vector of strings or symbols denoting the fields to omit from the output}
+\item{\code{omit}}{A vector of strings denoting the fields to omit from the output}
 
 \item{\code{show}}{(logical|FALSE) Should the rule be shown?}
 
@@ -261,7 +241,7 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 \if{html}{\out{<a id="method-smart.data-capture"></a>}}
 \if{latex}{\out{\hypertarget{method-smart.data-capture}{}}}
 \subsection{Method \code{capture()}}{
-\code{$capture} captures the current state of objects in \code{$smart.rules} and saves distinct entries in \code{private$history}
+\code{$capture} captures the current state of objects in \code{$smart.rules} and saves distinct entries as JSON objects.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{smart.data$capture()}\if{html}{\out{</div>}}
 }

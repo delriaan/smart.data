@@ -1,4 +1,5 @@
 # https://roxygen2.r-lib.org/articles/rd-other.html
+# :: TAXONOMY ----
 #' Smart Taxonomy Constructor
 #' \code{taxonomy} is an S4 class to create a taxonomy object for use with \code{\link{smart.data}}.
 #'
@@ -14,30 +15,7 @@
 #' identifier <- new("taxonomy", term = rlang::sym("identifier"), desc = "Identifies unique instances of a type of reference")
 #'
 #' @export
-taxonomy <- {
-	setClass(
-		Class = "taxonomy"
-		, slots = list(term = "character", desc = "character"
-									 , fields = "character", law = "language", state = "character")
-		)}
-
-setMethod("initialize", "taxonomy"
-	, function(.Object, term, state = "pending", desc = "~", fields = character(), ...){
-		.Object <- callNextMethod()
-		.Object@term <- term
-		.Object@desc <- desc
-		.Object@fields <- fields
-		.Object@law <- rlang::expr(private$update.taxonomy(!!rlang::ensym(term)))
-		.Object@state <- state
-		.Object
-	})
-
-#' @export
-setMethod("as.list", "taxonomy"
-	, function(x, ...){
-			lapply(getSlots("taxonomy") |> names() |> rlang::set_names()
-						 , \(nm) slot(x, nm))
-	})
+taxonomy <- { setClass(Class = "taxonomy", slots = list(term = "character", desc = "character", fields = "character", law = "language", state = "character")	)}
 
 #' Taxonomy Validation
 #'
@@ -59,6 +37,61 @@ as.taxonomy <- function(x){
 	stopifnot(c("term", "desc") %in% names(x))
 	do.call(taxonomy, args = x)
 }
+
+# :: NAMING ----
+#' Smart Naming Constructor
+#' \code{name_map} is an S4 class to create a naming map for use with \code{\link{smart.data}}
+#'
+#' @slot name_map A named list with names as the new names of \code{$data} and the values as existing names
+#' @slot law A quoted expression that, when executed, will invoke \code{\link[data.table]{setnames}} for compatibility with \code{\link{smart.data}} method \code{$enforce.rules()}
+#' @slot state A string indicating whether the name map has been processed by \code{\link{smart.data}} method \code{$enforce.rules()}
+#' @return An object of class "name_map"
+#' @export
+name_map <- { setClass(	Class = "name_map", slots = list(name_map = "vector", law = "call", state = "character")) }
+
+#' Name Map Coercion
+#'
+#' @param x A list with named elements the same as the slots
+#' @return An object of class "name_map"
+#' @export
+as.name_map <- function(x){
+	x <- as.list(x)
+	name_map(name_map = x$name_map, law = x$law, state = "pending")
+}
+
+# :: METHODS ----
+setMethod("initialize", "taxonomy"
+	, function(.Object, term, state = "pending", desc = "~", fields = character(), law = rlang::expr(ls()),...){
+		.Object <- callNextMethod()
+		.Object@term <- term
+		.Object@desc <- desc
+		.Object@fields <- fields
+		.Object@law <- rlang::expr({
+					cur_fields <- self$smart.rules$for_usage[[!!term]]@fields;
+					new_fields <- if (rlang::is_empty(cur_fields)|| identical(cur_fields, "")){
+							NULL
+						} else {
+							self$smart.rules$for_naming |>
+								attr("history") |>
+								purrr::keep(\(i) any(i %in% self$smart.rules$for_usage[[!!term]]@fields)) |>
+								names()
+						}
+
+					if (!rlang::is_empty(new_fields)){
+						self$smart.rules$for_usage[[!!term]]@fields <- new_fields;
+					}
+					invisible(self);
+				})
+		.Object@state <- state
+		.Object
+	})
+
+#' @export
+setMethod("as.list", "taxonomy"
+	, function(x, ...){
+			lapply(getSlots("taxonomy") |> names() |> rlang::set_names()
+						 , \(nm) slot(x, nm))
+	})
 
 setMethod("as.taxonomy", "taxonomy"
 	, definition = function(x){ x })
@@ -87,20 +120,6 @@ setMethod("as.taxonomy", "character"
 			}
 	})
 
-#' Smart Naming Constructor
-#' \code{name_map} is an S4 class to create a naming map for use with \code{\link{smart.data}}
-#'
-#' @slot name_map A named list with names as the new names of \code{$data} and the values as existing names
-#' @slot law A quoted expression that, when executed, will invoke \code{\link[data.table]{setnames}} for compatibility with \code{\link{smart.data}} method \code{$enforce.rules()}
-#' @slot state A string indicating whether the name map has been processed by \code{\link{smart.data}} method \code{$enforce.rules()}
-#' @return An object of class "name_map"
-#' @export
-name_map <- {
-	setClass(
-		Class = "name_map"
-		, slots = list(name_map = "vector", law = "call", state = "character")
-		)}
-
 setMethod("initialize", "name_map"
 	, function(.Object, name_map, state = "pending", law = rlang::expr(ls()), ...){
 		.Object <- callNextMethod()
@@ -116,16 +135,6 @@ setMethod("initialize", "name_map"
 		.Object@state <- state
 		.Object
 	})
-
-#' Name Map Coercion
-#'
-#' @param x A list with named elements the same as the slots
-#' @return An object of class "name_map"
-#' @export
-as.name_map <- function(x){
-	x <- as.list(x)
-	name_map(name_map = x$name_map, law = x$law)
-}
 
 #' @export
 setMethod("as.list", "name_map"
