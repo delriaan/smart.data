@@ -105,20 +105,19 @@ smart.data <-	{ R6::R6Class(
 			invisible(self)
 		},
 		#' @description
-		#' \code{$taxonomy.rule()} sets class object \code{$smart.rules$for_usage} which is referenced by method \code{$use()}.  \code{$taxonomy.rule} creates a mapping between the usage and data type of a field, labeled by specific terms, and the names of the fields that participate.
+		#' \code{$taxonomy.rule()} sets class object \code{$smart.rules$for_usage} which is referenced by method \code{$use()}.  \code{$taxonomy.rule} creates a mapping of fields in \coide{$data} to labels that can be used to reference them.
 		#'
 		#' Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with the following required fields:
-		#' \describe{
-		#'  \item{term}{The name of the taxonomy term.  Defaults are \code{c("identifier", "event.date", "flag", "demographic", "category", "join.key")}}
-		#'  \item{desc}{A description for each term's interpretation or context for usage }
-		#'  \item{rule}{A quoted expression containing the rules to be enforced on fields mapped to the current term. The variable for the field must be expressed as 'x' or '.x' and the field name as 'y' or '.y': the law that is enforced exists in the context of \code{\link[purrr]{imap}}}
-		#'	\item{fields \code{(optional)}}{The fields in \code{$data} mapped to the term}
-		#' }
 		#'
-		#' @param ... (\code{\link[rlang]{dots_list}}) A list of taxonomy objects created with \code{\link{taxonomy}}
-		#' @param show (logical|FALSE) Should the rule be shown?
+		#' @param ... (\code{\link[rlang]{dots_list}}) A taxonomy objects created with \code{\link{taxonomy}}. Alternatively, \emph{named} lists may be provided which conform to the following:\cr
+		#' \describe{
+		#'  \item{term}{(character) The name of the taxonomy term
+		#'  \item{desc}{(character) A description for each term's interpretation or context for usage }
+		#'	\item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
+		#' }
+		#' @param show (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
-		taxonomy.rule = function(..., show = FALSE, chatty = FALSE){
+		taxonomy.rule = function(..., show = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |> lapply(as.taxonomy)
 
 			# Check for pre-existing term map ====
@@ -146,7 +145,7 @@ smart.data <-	{ R6::R6Class(
 				}
 			}
 
-			if (interactive()){
+			if (interactive() & show){
 				field_list <- purrr::map(these_taxonomies, \(i) i@fields) %>%
 					append(list(data_names = setdiff(names(self$data), unique(unlist(., use.names = FALSE))))) |>
 					listviewer::jsonedit_gadget() |>
@@ -157,12 +156,6 @@ smart.data <-	{ R6::R6Class(
 					these_taxonomies[[j]]@fields <- unlist(i)
 					self$smart.rules$for_usage[[j]] <- these_taxonomies[[j]]
 				});
-			}
-
-			if (show){
-				self$smart.rules$for_usage %$%
-					mget(ls()) |>
-					lapply(\(x) sprintf("", x@desc, paste(x@fields[[1]], collapse = ", ")))
 			}
 
 			invisible(self);
@@ -222,8 +215,7 @@ smart.data <-	{ R6::R6Class(
 			invisible(self);
 		},
 		#' @description
-		#' \code{$reset} restores the object \code{$data} to the original value supplied when the class was initiated.  Rules are set to a state of "pending", and transformation rules are set as inactive (\code{active = FALSE})
-		# @param replay (logical | TRUE) When \code{TRUE}, captured history is executed to reproduce the last saved state.
+		#' \code{$reset} restores the object \code{$data} to the original value and re-initializes rules
 		#' @param safe (logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.
 		#'
 		#' @return Invisibly, the class object with member \code{$data} modified to the original state

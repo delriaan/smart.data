@@ -21,6 +21,7 @@ smrt$smart.rules$for_naming@law
 smrt$
 	naming.rule(!!!data_names)$
 	enforce.rules(for_naming)
+
 names(smrt$data)
 
 smrt$taxonomy.rule(
