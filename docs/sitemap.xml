@@ -13,6 +13,12 @@
     <loc>/LICENSE-text.html</loc>
   </url>
   <url>
+    <loc>/reference/as.name_map.html</loc>
+  </url>
+  <url>
+    <loc>/reference/as.taxonomy.html</loc>
+  </url>
+  <url>
     <loc>/reference/get.smart.html</loc>
   </url>
   <url>
@@ -22,9 +28,18 @@
     <loc>/reference/is.smart.html</loc>
   </url>
   <url>
+    <loc>/reference/is.taxonomy.html</loc>
+  </url>
+  <url>
+    <loc>/reference/name_map-class.html</loc>
+  </url>
+  <url>
     <loc>/reference/smart.data.html</loc>
   </url>
   <url>
     <loc>/reference/smart.upgrade.html</loc>
+  </url>
+  <url>
+    <loc>/reference/taxonomy-class.html</loc>
   </url>
 </urlset>

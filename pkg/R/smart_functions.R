@@ -1,4 +1,3 @@
-is.smart <- function(...){
 #' Check for Signs of Intelligence
 #'
 #' @description
@@ -9,17 +8,15 @@ is.smart <- function(...){
 #' @return A vector of logical results the length of the input.
 #'
 #' @export
-
+is.smart <- function(...){
 	purrr::map(rlang::list2(...), \(x){
-		c(smart.data_class_exists = any(class(x)	%ilike% "smart")
+		c(smart.data_class_exists = any(grepl("smart", class(x)))
 			, has_orig_data = !purrr::is_empty(x$.__enclos_env__$private$orig.data)
 			) |> all(na.rm = TRUE)
 		}) |>
 		unlist()
 }
-
 #
-smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 #' Upgrade a Smart Object
 #'
 #' \code{smart.upgrade} assigns a new \code{smart.data} object to replace the existing object.  The primary use case for this function is when there is a package upgrade, and down-rev objects need to be upgraded.  Objects \code{$smart.rules}, \code{private$orig.data}, \code{$cache}, and \code{$name} are preserved.
@@ -29,7 +26,7 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 #' @param chatty (logical) When \code{TRUE}, additional messages are sent to the
 #'
 #' @export
-
+smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 	if (...length() == 0){ message("Nothing to do!"); return() }
 
 	env <- substitute(env);
@@ -68,9 +65,7 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 
 	purrr::walk(queue, .func);
 }
-
 #
-get.smart <- function(..., list.only = FALSE){
 #' Get a Smart Object
 #'
 #' \code{get.smart} retrieves \code{\link{smart.data}} objects from the global smart-cache or throws a message if the global cache does not exist
@@ -81,7 +76,7 @@ get.smart <- function(..., list.only = FALSE){
 #' @return A list of retrieved \code{smart.data} objects, invisibly.
 #'
 #' @export
-
+get.smart <- function(..., list.only = FALSE){
 	if (list.only)( return(.___SMART___$keys()) )
 
 	.these <- if (...length() == 0){
