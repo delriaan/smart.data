@@ -1,12 +1,8 @@
 #' @title Smart Interaction With Data
 #' @description
-#' \code{smart.data} is an R6 class that facilitates the manipulation of a data set by providing rules-based operations and taxonomical column reference.
-#'
-#' You will need to install related package \href{https://github.com/delriaan/book.of.utilities}{book.of.utilities}
+#' The goal of the \code{smart.data} package is to provide an API that allows for semantic interaction with tabular data as well as governed manipulation of the same.  Each \code{smart.data} object is an R6 reference class instance which can be symbolically retrieved from memory cache (see \code{\link[cachem]{cachem_mem}}) as well as by direct workspace object invocation.
 #'
 #' @importFrom magrittr %>% %T>% %<>% or %$%
-#' @importFrom data.table like %like% %ilike% %flike%
-#' @importFrom book.of.utilities unregex as.regex
 #' @importFrom stringi %s+%
 #' @importFrom utils hasName
 #'
@@ -15,20 +11,19 @@ smart.data <-	{ R6::R6Class(
 	classname = "smart.data"
 	, lock_objects = FALSE
 	, public	= { list(
-		#' @field data A \code{\link[data.table]{data.table}} =object holding the current state of the data
+		#' @field data A \code{\link[data.table]{data.table}} object holding the current state of the data
 		data = NULL,
-		#' @field name The label to use for the data
+		#' @field name The label to use to semantically retrieve the \code{smart.data} object from cache
 		name = NULL,
-		#' @field id A unique ID for the object
+		#' @field id An auto-generated unique ID for the \code{smart.data} object
 		id = NULL,
 		#' @field smart.rules An environment holding user-generated sets of rules
 		smart.rules = NULL,
 		#' @description Initialize the class object.
 		#' @param x The input data
 		#' @param name The name for the smart class when used in smart functions
-		#' @param ... Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}}).  If none are provided, a composite cache is created of types \code{memory} and \code{disk}, both using defaults (see \code{\link[cachem]{cache_mem}} and \code{\link[cachem]{cache_disk}})
+		#' @param ... Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}} and related).  If none are provided, the default is to create a memory cache via \code{\link[cachem]{cache_mem}}
 		initialize = function(x, name = "new_data", ...){
-
 			if (!".___SMART___" %in% ls("package:smart.data")){
 				rlang::env_unlock(rlang::pkg_env("smart.data"))
 
@@ -81,7 +76,7 @@ smart.data <-	{ R6::R6Class(
 
 			cur_map <- self$smart.rules$for_naming
 
-			new_map %<>% .[unlist(.) %in% names(cur_map@name_map)]
+			new_map %<>% .[unlist(.) %in% (cur_map@name_map)]
 
 			if (rlang::is_empty(new_map)){
 				message("None of the old names provided are found in existing data field names")
@@ -89,7 +84,8 @@ smart.data <-	{ R6::R6Class(
 			}
 
 			new_map <- (\(x, y){
-				names(x)[unlist(y) %in% unlist(x)] <- names(y); x
+				names(x)[unlist(y) %in% unlist(x)] <- names(y);
+				x;
 			})(cur_map@name_map, new_map)
 
 			self$smart.rules$for_naming <- {
@@ -105,19 +101,19 @@ smart.data <-	{ R6::R6Class(
 			invisible(self)
 		},
 		#' @description
-		#' \code{$taxonomy.rule()} sets class object \code{$smart.rules$for_usage} which is referenced by method \code{$use()}.  \code{$taxonomy.rule} creates a mapping of fields in \coide{$data} to labels that can be used to reference them.
+		#' \code{$taxonomy.rule()} sets class object \code{$smart.rules$for_usage} which is referenced by method \code{$use()}.  \code{$taxonomy.rule} creates a mapping of fields in \code{$data} to labels that can be used to reference them.
 		#'
 		#' Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with the following required fields:
 		#'
 		#' @param ... (\code{\link[rlang]{dots_list}}) A taxonomy objects created with \code{\link{taxonomy}}. Alternatively, \emph{named} lists may be provided which conform to the following:\cr
 		#' \describe{
-		#'  \item{term}{(character) The name of the taxonomy term
+		#'  \item{term}{(character) The name of the taxonomy term}
 		#'  \item{desc}{(character) A description for each term's interpretation or context for usage }
 		#'	\item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
 		#' }
-		#' @param show (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms
+		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
-		taxonomy.rule = function(..., show = FALSE){
+		taxonomy.rule = function(..., gui = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |> lapply(as.taxonomy)
 
 			# Check for pre-existing term map ====
@@ -145,27 +141,33 @@ smart.data <-	{ R6::R6Class(
 				}
 			}
 
-			if (interactive() & show){
-				field_list <- purrr::map(these_taxonomies, \(i) i@fields) %>%
-					append(list(data_names = setdiff(names(self$data), unique(unlist(., use.names = FALSE))))) |>
+			# Create a list of entries per taxonomy object slot @fields
+			field_list <- purrr::map(these_taxonomies, \(i) i@fields);
+
+			# Conditional interactive editing of the taxonomy
+			if (interactive() & gui){
+				field_list <- append(field_list, list(data_names = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))) |>
 					listviewer::jsonedit_gadget() |>
 					purrr::discard_at("data_names") |>
 					purrr::compact()
-
-				purrr::iwalk(field_list, \(i, j){
-					these_taxonomies[[j]]@fields <- unlist(i)
-					self$smart.rules$for_usage[[j]] <- these_taxonomies[[j]]
-				});
 			}
+
+			# Only process entries with non-empty entries for @fields
+			purrr::iwalk(field_list, \(i, j){
+				if (!rlang::is_empty(i)){
+					these_taxonomies[[j]]@fields <- unlist(i)
+				}
+				assign(j, these_taxonomies[[j]], envir = self$smart.rules$for_usage)
+			})
 
 			invisible(self);
 		},
 		#'	@description
 		#'	\code{$enforce.rules} operates on rules saved in \code{$smart.rules} and evaluates the quoted "law" on \code{$data}.  Custom rules can be directly added to class member \code{$smart.rules}: they must have an attribute "law" containing a quoted expression referencing object \code{.data} and \code{rule}.  The rule should contain any objects referenced by the quoted expression.
-		#'	@param ... (string[]) The names of the rules to enforce
-		#'	@param chatty (logical|FALSE) Should additional execution information be printed to console?
+		#' @param ... (string[]) The names of the rules to enforce
+		#' @param chatty (logical|FALSE) Should additional execution information be printed to console?
 		#'
-		#'	@return Invisibly, the class object with member \code{$data} modified according to the rules enforced
+		#' @return Invisibly, the class object with member \code{$data} modified according to the rules enforced
 		enforce.rules = function(..., chatty = FALSE){
 			rules = if (...length() == 0){
 					self$smart.rules %$% ls(pattern = "name")
@@ -234,7 +236,7 @@ smart.data <-	{ R6::R6Class(
 					, "class"
 					, c(class(private$orig.data), "smart.data")
 					)}
-				self$smart.rules[["for_naming"]] <- name_map(name_map = rlang::set_names(names(self$data)))
+				self$smart.rules[["for_naming"]] <- name_map(name_map = rlang::set_names(names(self$data)), state = "pending")
 				self$smart.rules[["for_usage"]] <- new.env()
 			}
 
@@ -247,23 +249,22 @@ smart.data <-	{ R6::R6Class(
 		#'
 		#' @param ... Taxonomy terms as defined by \code{self$transformation.rule}: can be object names or strings
 		#' @param subset A list of quoted expressions that will row-wise filter the data using \code{\link[data.table]{data.table}} syntax
-		#' @param retain A vector of strings denoting the fields to retain in the output.  Pattern-matching is supported
-		#' @param omit A vector of strings denoting the fields to omit from the output
+		#' @param retain,omit A vector of strings and symbols denoting the fields to retain in the output: pattern-matching is supported
 		#' @param show (logical|FALSE) Should the rule be shown?
 		#' @param chatty (logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.
 		#'
 		#' @return \code{self$data} with columns selected based on the terms supplied
 		use = function(..., subset = TRUE, retain = NULL, omit = NULL, show = FALSE, chatty = FALSE){
 			# .checkout is a helper function to handle expressions containing calls such as 'c' or 'list'
-			.checkout <- (\(x){
-				as.call(
-					rlang::list2(
-						c
-						, !!!sapply(x, \(i){ if ("call" %in% class(i)){ as.character(i[-1]) } else { as.character(i) }})
-					)) |>
-					eval() |>
-					unique()
-			})
+			.checkout <- \(x){
+					if (is.list(x)){
+						as.character(x)
+					} else if (length(as.character(x)) > 1){
+							as.character(x)[-1]
+						} else {
+							as.character(x)
+						}
+				}
 
 			term_list <- if (...length() > 0){
 				rlang::enexprs(...) |> .checkout()
@@ -288,25 +289,38 @@ smart.data <-	{ R6::R6Class(
 
 			# Process 'retain', 'omit', and '.field_list', and return the output ====
 			all_fields <- { mget(term_list, envir = self$smart.rules$for_usage) |>
-					purrr::map(\(i) i@fields |> unlist()) |>
-					purrr::compact() |>
-					unlist(use.names = FALSE) |>
-					c(retain) |>
-					purrr::compact() |>
-					purrr::discard(\(i) i %in% omit) |>
-					unique()
-				}
+				purrr::map(\(i) i@fields |> unlist()) |>
+				purrr::compact() |>
+				unlist(use.names = FALSE) |>
+				c(retain) |>
+				purrr::compact() |>
+				purrr::discard(\(i) i %in% omit) |>
+				unique() |>
+				rlang::syms() |>
+				rlang::as_quosures(
+					env = rlang::as_data_mask(self$data[eval(rlang::enexpr(subset))])
+					, named = TRUE
+					)
+			}
 
 			# Return 'self$data' selected by taxonomy fields
-			self$data[
-				eval(rlang::enexpr(subset))
-				, mget(all_fields)
-				] |> data.table::setattr("class", c("data.table", "data.frame"))
+			if (rlang::is_empty(all_fields)){
+				stop("No taxonomy found.")
+			} else {
+				# self$data[eval(rlang::enexpr(subset)), eval(all_fields)] |>
+				lapply(all_fields, rlang::eval_tidy) |>
+					data.table::as.data.table()
+			}
 		},
 		#' @description
 		#' \code{$cache_mgr} adds the current object to the shared "smart" cache space (see \code{\link[cachem]{cache_layered}}).  The shared cache is layered as 'memory' followed by 'disk.'
 		#'
-		#' @param action One of \code{register} or \code{unregister}
+		#' @param action One of the following (partial matching supported):\cr
+		#' \itemize{
+		#' \item{Add to cache: \code{register}, \code{add}}
+		#' \item{Remove from cache: \code{unregister}, \code{remove}}
+		#' \item{Update in cache: \code{update}, \code{refresh}}
+		#' }
 		#' @param chatty (logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.
 		#' @param ... Additional arguments to use when initializing a cache object
 		cache_mgr = function(action, chatty = FALSE, ...){
@@ -325,9 +339,9 @@ smart.data <-	{ R6::R6Class(
 			}
 
 			logi_vec <- { c(
-					add.cache 	= any(as.character(substitute(action)) %ilike% "^(add|regi)")
-					, rem.cache = any(as.character(substitute(action)) %ilike% "^(rem|unreg)")
-					, upd.cache = any(as.character(substitute(action)) %ilike% "^(upd|refr)")
+					add.cache 	= any(grepl("^(add|regi)"	, x = as.character(substitute(action)), ignore.case = TRUE))
+					, rem.cache = any(grepl("^(rem|unreg)", x = as.character(substitute(action)), ignore.case = TRUE))
+					, upd.cache = any(grepl("^(upd|refr)"	, x = as.character(substitute(action)), ignore.case = TRUE))
 					) %>% .[which(.)]
 				} |> names();
 
@@ -416,4 +430,3 @@ smart.data <-	{ R6::R6Class(
 		)}
 	)
 }
-

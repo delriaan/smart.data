@@ -29,7 +29,6 @@ is.taxonomy <- function(x) {
 #' Taxonomy Coercion
 #'
 #' @param x A list, JSON string, data.* object with named elements the same as the slots in class \code{\link{taxonomy}}
-#'
 #' @return Objects of class "taxonomy"
 #' @export
 as.taxonomy <- function(x){
@@ -40,6 +39,7 @@ as.taxonomy <- function(x){
 
 # :: NAMING ----
 #' Smart Naming Constructor
+#'
 #' \code{name_map} is an S4 class to create a naming map for use with \code{\link{smart.data}}
 #'
 #' @slot name_map A named list with names as the new names of \code{$data} and the values as existing names

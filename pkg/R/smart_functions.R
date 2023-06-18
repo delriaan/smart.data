@@ -10,7 +10,7 @@
 #' @export
 is.smart <- function(...){
 	purrr::map(rlang::list2(...), \(x){
-		c(smart.data_class_exists = any(class(x)	%ilike% "smart")
+		c(smart.data_class_exists = any(grepl("smart", class(x)))
 			, has_orig_data = !purrr::is_empty(x$.__enclos_env__$private$orig.data)
 			) |> all(na.rm = TRUE)
 		}) |>

@@ -1,15 +1,15 @@
 # library(smart.data)
 # library(magrittr); library(stringi)
-library(data.table); library(purrr);
-library(book.of.utilities);
-library(magrittr);
-library(stringi, include.only = "%s+%")
+# library(data.table); library(purrr);
+# library(book.of.utilities);
+# library(magrittr);
+# library(stringi, include.only = "%s+%")
 
-orig_data <- mtcars
-data_names <- (\(x) rlang::set_names(x, toupper(x)))(names(mtcars))
+orig_data <- data.table::as.data.table(mtcars, keep.rownames = TRUE) |> data.table::setnames("rn", "make_model")
+data_names <- (\(x) rlang::set_names(x, toupper(x)))(names(orig_data))
 
 #
-# ~ PART I: Functionality Tests====
+# ~ PART I: Functionality Tests ====
 smrt <- smart.data$
 	new(x = orig_data, name = "smart_cars")$
 	naming.rule(!!!data_names)$
@@ -18,12 +18,6 @@ smrt <- smart.data$
 names(smrt$data)
 smrt$smart.rules$for_naming@law
 
-smrt$
-	naming.rule(!!!data_names)$
-	enforce.rules(for_naming)
-
-names(smrt$data)
-
 smrt$taxonomy.rule(
 	identifier = new("taxonomy", term = "identifier", desc = "Identifies unique instances of a type of reference")
 	, flag = new("taxonomy", term = "flag", desc = "Logical indicator")
@@ -31,8 +25,11 @@ smrt$taxonomy.rule(
 	, category = new("taxonomy", term = "category", desc = "Indicates a categorical variable")
 	, event.date = new("taxonomy", term = "event.date", desc = "The event dates or duration boundary dates")
 	, join.key = new("taxonomy", term = "join.key", desc = "Indicates the field(s) to use for 'data.table' joins")
+	, gui = TRUE
 	)
-smrt$smart.rules$for_usage %$% mget(ls())
+
+# debug(smrt$use)
+# smrt$smart.rules$for_usage %$% mget(ls())
 smrt$enforce.rules(for_usage)
 smrt$use() |> print()
 smrt$use(identifier) |> print()
@@ -47,16 +44,18 @@ smrt$get.history
 smrt$reset(safe = TRUE)
 
 names(smrt$data)
-smrt$smart.rules$for_naming@law
 smrt$smart.rules$for_naming@state
+smrt$
+	naming.rule(!!!data_names)$
+	enforce.rules(for_naming)
 
-View(smrt$smart.rules) # All top-level list elements should have attribute "state" set to "pending"; transformation rules should all have attribute "active" set to 'TRUE'
+names(smrt$data)
 
 # ~ PART III: Smart Cache ----
 smrt$name <- "smart_cars"
-smrt$cache_mgr(action = upd)
-get.smart(smart_cars)$use(omit = "DRAT") |> print()
 is.smart(smrt)
+smrt$cache_mgr(action = upd)
+get.smart(smart_cars)$data
 #
 # ~ pkgdown ----
 # usethis::use_pkgdown()

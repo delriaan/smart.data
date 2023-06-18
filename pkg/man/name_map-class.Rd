@@ -4,13 +4,11 @@
 \name{name_map-class}
 \alias{name_map-class}
 \alias{name_map}
-\title{Smart Naming Constructor
-\code{name_map} is an S4 class to create a naming map for use with \code{\link{smart.data}}}
+\title{Smart Naming Constructor}
 \value{
 An object of class "name_map"
 }
 \description{
-Smart Naming Constructor
 \code{name_map} is an S4 class to create a naming map for use with \code{\link{smart.data}}
 }
 \section{Slots}{

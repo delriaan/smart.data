@@ -4,18 +4,16 @@
 \alias{smart.data}
 \title{Smart Interaction With Data}
 \description{
-\code{smart.data} is an R6 class that facilitates the manipulation of a data set by providing rules-based operations and taxonomical column reference.
-
-You will need to install related package \href{https://github.com/delriaan/book.of.utilities}{book.of.utilities}
+The goal of the \code{smart.data} package is to provide an API that allows for semantic interaction with tabular data as well as governed manipulation of the same.  Each \code{smart.data} object is an R6 reference class instance which can be symbolically retrieved from memory cache (see \code{\link[cachem]{cachem_mem}}) as well as by direct workspace object invocation.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{data}}{A \code{\link[data.table]{data.table}} =object holding the current state of the data}
+\item{\code{data}}{A \code{\link[data.table]{data.table}} object holding the current state of the data}
 
-\item{\code{name}}{The label to use for the data}
+\item{\code{name}}{The label to use to semantically retrieve the \code{smart.data} object from cache}
 
-\item{\code{id}}{A unique ID for the object}
+\item{\code{id}}{An auto-generated unique ID for the \code{smart.data} object}
 
 \item{\code{smart.rules}}{An environment holding user-generated sets of rules}
 }
@@ -59,7 +57,7 @@ Initialize the class object.
 
 \item{\code{name}}{The name for the smart class when used in smart functions}
 
-\item{\code{...}}{Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}}).  If none are provided, a composite cache is created of types \code{memory} and \code{disk}, both using defaults (see \code{\link[cachem]{cache_mem}} and \code{\link[cachem]{cache_disk}})}
+\item{\code{...}}{Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}} and related).  If none are provided, the default is to create a memory cache via \code{\link[cachem]{cache_mem}}}
 }
 \if{html}{\out{</div>}}
 }
@@ -90,25 +88,24 @@ Before invisibly returning the class object, a list is saved to \code{self$smart
 \if{html}{\out{<a id="method-smart.data-taxonomy.rule"></a>}}
 \if{latex}{\out{\hypertarget{method-smart.data-taxonomy.rule}{}}}
 \subsection{Method \code{taxonomy.rule()}}{
-\code{$taxonomy.rule()} sets class object \code{$smart.rules$for_usage} which is referenced by method \code{$use()}.  \code{$taxonomy.rule} creates a mapping between the usage and data type of a field, labeled by specific terms, and the names of the fields that participate.
+\code{$taxonomy.rule()} sets class object \code{$smart.rules$for_usage} which is referenced by method \code{$use()}.  \code{$taxonomy.rule} creates a mapping of fields in \code{$data} to labels that can be used to reference them.
 
 Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with the following required fields:
-\describe{
-\item{term}{The name of the taxonomy term.  Defaults are \code{c("identifier", "event.date", "flag", "demographic", "category", "join.key")}}
-\item{desc}{A description for each term's interpretation or context for usage }
-\item{rule}{A quoted expression containing the rules to be enforced on fields mapped to the current term. The variable for the field must be expressed as 'x' or '.x' and the field name as 'y' or '.y': the law that is enforced exists in the context of \code{\link[purrr]{imap}}}
-\item{fields \code{(optional)}}{The fields in \code{$data} mapped to the term}
-}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(..., show = FALSE, chatty = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(..., gui = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{(\code{\link[rlang]{dots_list}}) A list of taxonomy objects created with \code{\link{taxonomy}}}
+\item{\code{...}}{(\code{\link[rlang]{dots_list}}) A taxonomy objects created with \code{\link{taxonomy}}. Alternatively, \emph{named} lists may be provided which conform to the following:\cr
+\describe{
+\item{term}{(character) The name of the taxonomy term}
+\item{desc}{(character) A description for each term's interpretation or context for usage }
+\item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
+}}
 
-\item{\code{show}}{(logical|FALSE) Should the rule be shown?}
+\item{\code{gui}}{(logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms}
 
 \item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
 }
@@ -161,7 +158,7 @@ Invisibly, the class object with member \code{$data} modified according to the r
 \if{html}{\out{<a id="method-smart.data-reset"></a>}}
 \if{latex}{\out{\hypertarget{method-smart.data-reset}{}}}
 \subsection{Method \code{reset()}}{
-\code{$reset} restores the object \code{$data} to the original value supplied when the class was initiated.  Rules are set to a state of "pending", and transformation rules are set as inactive (\code{active = FALSE})
+\code{$reset} restores the object \code{$data} to the original value and re-initializes rules
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{smart.data$reset(safe = TRUE)}\if{html}{\out{</div>}}
 }
@@ -202,9 +199,7 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 
 \item{\code{subset}}{A list of quoted expressions that will row-wise filter the data using \code{\link[data.table]{data.table}} syntax}
 
-\item{\code{retain}}{A vector of strings denoting the fields to retain in the output.  Pattern-matching is supported}
-
-\item{\code{omit}}{A vector of strings denoting the fields to omit from the output}
+\item{\code{retain, omit}}{A vector of strings and symbols denoting the fields to retain in the output: pattern-matching is supported}
 
 \item{\code{show}}{(logical|FALSE) Should the rule be shown?}
 
@@ -228,7 +223,12 @@ When no arguments are supplied, the default is to return the fields mapped to ex
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{action}}{One of \code{register} or \code{unregister}}
+\item{\code{action}}{One of the following (partial matching supported):\cr
+\itemize{
+\item{Add to cache: \code{register}, \code{add}}
+\item{Remove from cache: \code{unregister}, \code{remove}}
+\item{Update in cache: \code{update}, \code{refresh}}
+}}
 
 \item{\code{chatty}}{(logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.}
 
