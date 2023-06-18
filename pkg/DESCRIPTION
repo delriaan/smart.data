@@ -2,7 +2,7 @@ Package: smart.data
 Title: Smart Interaction With Data
 Description: Package `smart.data` provides a semantic framework for referencing tabular data.
 Type: Package
-Version: 0.1.3.0055
+Version: 0.1.3.0060
 Author: Chionesu George <sapienti.Dei@outlook.com> [aut, cre]
 Maintainer: Chionesu George <sapienti.Dei@outlook.com>
 License: file LICENSE

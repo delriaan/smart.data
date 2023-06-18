@@ -15,3 +15,7 @@ An object of class "name_map"
 \description{
 Name Map Coercion
 }
+\examples{
+library(smart.data)
+as.name_map(list(name_map = c(A = "a", B = "z"), law = rlang::expr(eval())))
+}

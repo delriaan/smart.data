@@ -28,6 +28,7 @@ Smart Taxonomy Constructor
 }}
 
 \examples{
-identifier <- new("taxonomy", term = rlang::sym("identifier"), desc = "Identifies unique instances of a type of reference")
+library(smart.data)
+new("taxonomy", term = "identifier", desc = "Identifies unique instances of a type of reference")
 
 }
