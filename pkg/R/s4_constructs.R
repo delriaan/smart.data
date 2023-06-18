@@ -12,7 +12,8 @@
 #' @return An object of class "taxonomy"
 #'
 #' @examples
-#' identifier <- new("taxonomy", term = rlang::sym("identifier"), desc = "Identifies unique instances of a type of reference")
+#' library(smart.data)
+#' new("taxonomy", term = "identifier", desc = "Identifies unique instances of a type of reference")
 #'
 #' @export
 taxonomy <- { setClass(Class = "taxonomy", slots = list(term = "character", desc = "character", fields = "character", law = "language", state = "character")	)}
@@ -30,6 +31,9 @@ is.taxonomy <- function(x) {
 #'
 #' @param x A list, JSON string, data.* object with named elements the same as the slots in class \code{\link{taxonomy}}
 #' @return Objects of class "taxonomy"
+#' @examples
+#' library(smart.data)
+#' as.taxonomy(list(term = "test_term", desc = "test_description"))
 #' @export
 as.taxonomy <- function(x){
 	x <- as.list(x)
@@ -46,6 +50,9 @@ as.taxonomy <- function(x){
 #' @slot law A quoted expression that, when executed, will invoke \code{\link[data.table]{setnames}} for compatibility with \code{\link{smart.data}} method \code{$enforce.rules()}
 #' @slot state A string indicating whether the name map has been processed by \code{\link{smart.data}} method \code{$enforce.rules()}
 #' @return An object of class "name_map"
+#' @examples
+#' library(smart.data)
+#' new("name_map", name_map = rlang::set_names(letters, LETTERS))
 #' @export
 name_map <- { setClass(	Class = "name_map", slots = list(name_map = "vector", law = "call", state = "character")) }
 
@@ -53,10 +60,13 @@ name_map <- { setClass(	Class = "name_map", slots = list(name_map = "vector", la
 #'
 #' @param x A list with named elements the same as the slots
 #' @return An object of class "name_map"
+#' @examples
+#' library(smart.data)
+#' as.name_map(list(name_map = c(A = "a", B = "z"), law = rlang::expr(eval())))
 #' @export
 as.name_map <- function(x){
 	x <- as.list(x)
-	name_map(name_map = x$name_map, law = x$law, state = "pending")
+	name_map(name_map = x$name_map, law = rlang::expr(eval()), state = "pending")
 }
 
 # :: METHODS ----
@@ -93,27 +103,31 @@ setMethod("as.list", "taxonomy"
 						 , \(nm) slot(x, nm))
 	})
 
+#' @export
 setMethod("as.taxonomy", "taxonomy"
 	, definition = function(x){ x })
 
+#' @export
 setMethod("as.taxonomy", "list"
 	, definition = function(x){
 			do.call(taxonomy, args = x)
 	})
 
+#' @export
 setMethod("as.taxonomy", "data.table"
 	, function(x){
 			apply(x, MARGIN = 1, FUN = as.taxonomy(), simplify = FALSE) |>
 			list2env(envir = rlang::caller_env())
 	})
 
+#' @export
 setMethod("as.taxonomy", "character"
 	, function(x){
 			if (is(x, "json")){
-				jsonlite::fromJSON(x) |> as.list() |> list2env(envir = rlang::current_env())
-				rm(x)
-				law <- substitute(str2lang(i), env = list(i = law))
-				do.call(taxonomy, args = mget(ls()))
+				x <- jsonlite::fromJSON(x) |>
+					purrr::modify_at("law", \(i) str2lang(paste(i, collapse = "\n")))
+					smart.data::as.taxonomy()
+					taxonomy(term = x$term, desc = x$desc)
 			} else {
 				message("Cannot convert to taxonomy (unsupported class)")
 				return(invisible())
@@ -140,5 +154,5 @@ setMethod("initialize", "name_map"
 setMethod("as.list", "name_map"
 	, function(x, ...){
 		lapply(getSlots("name_map") |> names() |> rlang::set_names()
-					 , \(nm) slot(x, nm))
+		 , \(nm) slot(x, nm))
 	})

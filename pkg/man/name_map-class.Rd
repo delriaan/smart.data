@@ -21,3 +21,7 @@ An object of class "name_map"
 \item{\code{state}}{A string indicating whether the name map has been processed by \code{\link{smart.data}} method \code{$enforce.rules()}}
 }}
 
+\examples{
+library(smart.data)
+new("name_map", name_map = rlang::set_names(letters, LETTERS))
+}

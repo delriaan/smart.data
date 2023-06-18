@@ -15,3 +15,7 @@ Objects of class "taxonomy"
 \description{
 Taxonomy Coercion
 }
+\examples{
+library(smart.data)
+as.taxonomy(list(term = "test_term", desc = "test_description"))
+}
