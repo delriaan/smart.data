@@ -52,7 +52,7 @@ as.taxonomy <- function(x){
 #' @return An object of class "name_map"
 #' @examples
 #' library(smart.data)
-#' new("name_map", name_map = rlang::set_names(letters, LETTERS))
+#' new("name_map", name_map = rlang::set_names(letters[1:5], LETTERS[22:26]))
 #' @export
 name_map <- { setClass(	Class = "name_map", slots = list(name_map = "vector", law = "call", state = "character")) }
 
@@ -139,7 +139,7 @@ setMethod("initialize", "name_map"
 		.Object <- callNextMethod()
 		.Object@name_map <- rlang::dots_list(!!!name_map, .named = TRUE, .ignore_empty = "all", .homonyms = "last")
 		.Object@law <- { rlang::expr(
-			data.table::setnames(
+			setnames(
 				x = self$data
 				, old = !!unlist(.Object@name_map, use.names = FALSE)
 				, new = !!names(.Object@name_map)

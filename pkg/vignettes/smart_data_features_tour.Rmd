@@ -53,12 +53,18 @@ Taxonomy terms:
 - **style**: VS, AM
 
 ```{r TAXONOMY_DEF}
-smrt$taxonomy.rule(
-	identifier = taxonomy(term = "identifier", desc = "Make and Model", fields = c("make_model"))
-	, performance = taxonomy(term = "performance", desc = "Performance stats", fields = c("MPG", "QSEC", "HP"))
-	, metrics  = taxonomy(term = "metrics", desc = "Physical Metrics", fields = c("CYL", "DISP", "DRAT", "WT", "GEAR", "CARB"))
-	, style = taxonomy(term = "characteristics", desc = "Categorical Descriptors", fields = c("VS", "AM"))
-	)$enforce.rules(for_usage)
+identifier <- taxonomy(term = "identifier", desc = "Make and Model"
+											 , fields = c("make_model"))
+performance <- taxonomy(term = "performance", desc = "Performance stats"
+												, fields = c("MPG", "QSEC", "HP"))
+metrics <- taxonomy(term = "metrics", desc = "Physical Metrics"
+										, fields = c("CYL", "DISP", "DRAT", "WT", "GEAR", "CARB"))
+style <- taxonomy(term = "characteristics", desc = "Categorical Descriptors"
+									, fields = c("VS", "AM"))
+
+smrt$
+	taxonomy.rule(identifier, performance, metrics, style)$
+	enforce.rules(for_usage)
 ```
 
 ## Using Taxonomy Terms 
@@ -66,11 +72,28 @@ smrt$taxonomy.rule(
 To use the defined terms, class method `$use()` is invoked.  The output can be tailored depending on the arguments supplied:
 
 ```{r TAXONOMY_USE}
+# Use everything
 smrt$use() |> head()
+
+# Use 'identifier' fields
 smrt$use(identifier) |> head()
+
+# Use 'performance' fields
 smrt$use(performance) |> head()
-smrt$use(metrics, omit=c("DISP")) |> head()
-smrt$use(style, identifier) |> head()
+
+# Use 'metrics' fields omitting field "DISP"
+smrt$use(metrics, omit=DISP) |> head()
+
+# Use 'style' and 'identifier' fields also retaining field "QSEC
+smrt$use(style, identifier, retain = QSEC) |> head()
+
+# Use 'style' and 'identifier' fields also retaining fields "DISP" and "QSEC"
+smrt$use(style, identifier, retain = c(DISP, QSEC)) |> head()
+
+# Use 'style' and 'identifier' fields also retaining fields "DISP" and "QSEC" 
+#		filtering for rows where field 'make_model' contains the pattern "Merc"
+smrt$use(style, identifier, retain = c(DISP, QSEC)
+				 , subset = grepl("Merc", make_model)) |> head()
 ```
 
 # Using the Smart Cache 
@@ -80,9 +103,15 @@ Each `smart.data` object can be given an name during class invocation or by assi
 ```{r SMART_CACHE}
 smrt$cache_mgr(action = register)
 
+# View existing cached objects
+get.smart(list.only = TRUE)
+
+# Verify equivalent calls
 identical(get.smart(smart_cars)$data, smrt$data)
 
-get.smart(smart_cars)$use(performance, identifier, subset = quote(grepl("Merc", make_model)))
+# Use cached objects with taxonomy
+get.smart(smart_cars)$
+	use(performance, identifier, subset = grepl("Merc", make_model))
 ```
 
 If the underlying data is changed, the cached instance can be updated by using `$cache_mgr(action = replace)`.
