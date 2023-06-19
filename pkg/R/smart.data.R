@@ -43,7 +43,7 @@ smart.data <-	{ R6::R6Class(
 					self$smart.rules$for_usage <- x$smart.rules$for_usage;
 				}
 			} else {
-				private$orig.data <- data.table::copy(data.table::as.data.table(x));
+				private$orig.data <- data.table::copy(data.table::as.data.table(x, keep.rownames = TRUE));
 				private$history <- new.env();
 				private$version <- packageVersion("smart.data");
 			}

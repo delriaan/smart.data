@@ -23,34 +23,27 @@ smrt <- smart.data$
 	naming.rule(!!!data_names)$
 	enforce.rules(for_naming)
 
-# names(smrt$data)
-# smrt$smart.rules$for_naming@law
-
-# :: IDENTIFIER
-# make_model
-
-# :: PERFORMANCE
-# [, 1]	mpg	Miles/(US) gallon
-# [, 7]	qsec	1/4 mile time
-# [, 4]	hp	Gross horsepower
-
-# :: METRICS
-# [, 2]	cyl	Number of cylinders
-# [, 3]	disp	Displacement (cu.in.)
-# [, 5]	drat	Rear axle ratio
-# [, 6]	wt	Weight (1000 lbs)
-# [,10]	gear	Number of forward gears
-# [,11]	carb	Number of carburetors
-
-# :: CHARACTERISTICS
-# [, 8]	vs	Engine (0 = V-shaped, 1 = straight)
-# [, 9]	am	Transmission (0 = automatic, 1 = manual)
-
 smrt$taxonomy.rule(
 	identifier = taxonomy(term = "identifier", desc = "Make and Model")
+	# :: IDENTIFIER
+	# make_model
 	, performance = taxonomy(term = "performance", desc = "Performance stats")
+	# :: PERFORMANCE
+	# [, 1]	mpg	Miles/(US) gallon
+	# [, 7]	qsec	1/4 mile time
+	# [, 4]	hp	Gross horsepower
 	, metrics  = taxonomy(term = "metrics", desc = "Physical Metrics")
+	# :: METRICS
+	# [, 2]	cyl	Number of cylinders
+	# [, 3]	disp	Displacement (cu.in.)
+	# [, 5]	drat	Rear axle ratio
+	# [, 6]	wt	Weight (1000 lbs)
+	# [,10]	gear	Number of forward gears
+	# [,11]	carb	Number of carburetors
 	, characteristics = taxonomy(term = "characteristics", desc = "Categorical Descriptors")
+	# :: CHARACTERISTICS
+	# [, 8]	vs	Engine (0 = V-shaped, 1 = straight)
+	# [, 9]	am	Transmission (0 = automatic, 1 = manual)
 	, gui = TRUE
 	)$enforce.rules(for_usage)
 

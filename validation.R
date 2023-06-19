@@ -1,9 +1,4 @@
 # library(smart.data)
-# library(magrittr); library(stringi)
-# library(data.table); library(purrr);
-# library(book.of.utilities);
-# library(magrittr);
-# library(stringi, include.only = "%s+%")
 # 									mpg 	cyl disp  hp drat wt  	qsec	vs am gear carb
 # Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
 # Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
@@ -17,7 +12,7 @@ orig_data <- data.table::as.data.table(mtcars, keep.rownames = TRUE) |> data.tab
 data_names <- (\(x) rlang::set_names(x, toupper(x)))(names(orig_data))
 
 #
-# ~ PART I: Functionality Tests ====
+# PART I: Functionality Tests ====
 smrt <- smart.data$
 	new(x = orig_data, name = "smart_cars")$
 	naming.rule(!!!data_names)$
