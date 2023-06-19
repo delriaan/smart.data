@@ -2,21 +2,24 @@ Package: smart.data
 Title: Smart Interaction With Data
 Description: Package `smart.data` provides a semantic framework for referencing tabular data.
 Type: Package
-Version: 0.1.3.0060
+Version: 0.1.3.0075
 Author: Chionesu George <sapienti.Dei@outlook.com> [aut, cre]
 Maintainer: Chionesu George <sapienti.Dei@outlook.com>
 License: file LICENSE
 Encoding: UTF-8
 RoxygenNote: 7.2.3
-Depends: R (>= 4.1.0), magrittr
+Depends: R (>= 4.1.0)
+	, magrittr
+	, data.table
 Imports: purrr (>= 1.0.0)
 	, cachem
 	, stringi
-	, data.table
 	, utils
 	, rlang
 	, jsonlite
 	, listviewer
 NeedsCompilation: no
 Roxygen: list(markdown = TRUE)
+VignetteBuilder: knitr
+Suggests: knitr, rmarkdown
 URL: https://github.com/delriaan/smart.data/, https://delriaan.github.io/smart.data/, https://github.com/delriaan/book.of.utilities/, https://delriaan.github.io/book.of.utilities/

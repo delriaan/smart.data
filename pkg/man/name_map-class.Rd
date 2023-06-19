@@ -23,5 +23,5 @@ An object of class "name_map"
 
 \examples{
 library(smart.data)
-new("name_map", name_map = rlang::set_names(letters, LETTERS))
+new("name_map", name_map = rlang::set_names(letters[1:5], LETTERS[22:26]))
 }

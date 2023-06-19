@@ -105,7 +105,7 @@ Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with 
 \item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
 }}
 
-\item{\code{gui}}{(logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms}
+\item{\code{gui}}{(logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("\if{html}{\out{<DATA NAMES>}}") is provided containing fields names that can be interactively selected.}
 
 \item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
 }

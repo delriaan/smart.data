@@ -37,26 +37,22 @@ smart.data <-	{ R6::R6Class(
 			}
 
 			if (is.smart(x)){
-				private$orig.data <- data.table::copy(x$data);
+				private$orig.data <- copy(x$data);
 
 				if ("for_usage" %in% names(x$smart.rules)){
 					self$smart.rules$for_usage <- x$smart.rules$for_usage;
 				}
 			} else {
-				private$orig.data <- data.table::copy(data.table::as.data.table(x));
+				private$orig.data <- copy(as.data.table(x, keep.rownames = TRUE));
 				private$history <- new.env();
 				private$version <- packageVersion("smart.data");
 			}
 
-			self$data <- { data.table::setattr(
-				data.table::copy(private$orig.data)
-				, "class"
-				, c(class(private$orig.data), "smart.data")
-				)}
+			self$data <- copy(private$orig.data)
 
 			self$name <- name
 
-			self$id <- paste0(self$name, "_", data.table::address(self$data), "_", format(Sys.time(), "%Y%m%d%H%M%S"));
+			self$id <- paste0(self$name, "_", address(self$data), "_", format(Sys.time(), "%Y%m%d%H%M%S"));
 
 			self$smart.rules <- new.env();
 			self$smart.rules[["for_naming"]] <- name_map(name_map = rlang::set_names(names(self$data)), state = "pending")
@@ -88,12 +84,14 @@ smart.data <-	{ R6::R6Class(
 				x;
 			})(cur_map@name_map, new_map)
 
-			self$smart.rules$for_naming <- {
-				name_map(name_map = new_map) |>
-					data.table::setattr(
+			self$smart.rules$for_naming <- { name_map(name_map = new_map) |>
+					setattr(
 						"history"
-						, data.table::rbindlist(list(new_map, cur_map@name_map), use.names = FALSE) |> unique()
-						)
+						, rbindlist(
+								list(new_map, cur_map@name_map)
+								, use.names = FALSE
+								) |>
+							unique())
 			}
 
 			if (show){ self$smart.rules$for_naming }
@@ -111,7 +109,7 @@ smart.data <-	{ R6::R6Class(
 		#'  \item{desc}{(character) A description for each term's interpretation or context for usage }
 		#'	\item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
 		#' }
-		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms
+		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("<DATA NAMES>") is provided containing fields names that can be interactively selected.
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
 		taxonomy.rule = function(..., gui = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |> lapply(as.taxonomy)
@@ -146,9 +144,9 @@ smart.data <-	{ R6::R6Class(
 
 			# Conditional interactive editing of the taxonomy
 			if (interactive() & gui){
-				field_list <- append(field_list, list(data_names = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))) |>
+				field_list <- append(field_list, list(`<DATA NAMES>` = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))) |>
 					listviewer::jsonedit_gadget() |>
-					purrr::discard_at("data_names") |>
+					purrr::discard_at("<DATA NAMES>") |>
 					purrr::compact()
 			}
 
@@ -225,17 +223,16 @@ smart.data <-	{ R6::R6Class(
 			replay <- FALSE;
 
 			.reset = if (safe & interactive()){
-					tcltk::tk_messageBox(type = "yesno", message = "Reset data to the original values?", "You sure 'bout that?") != "no"
+					tcltk::tk_messageBox(
+						type = "yesno"
+						, message = "Reset data to the original values?", "You sure 'bout that?"
+						) != "no"
 				} else {
 					!interactive() & !safe
 				}
 
 			if (.reset){
-				self$data <- { data.table::setattr(
-					data.table::copy(private$orig.data)
-					, "class"
-					, c(class(private$orig.data), "smart.data")
-					)}
+				self$data <- copy(private$orig.data)
 				self$smart.rules[["for_naming"]] <- name_map(name_map = rlang::set_names(names(self$data)), state = "pending")
 				self$smart.rules[["for_usage"]] <- new.env()
 			}
@@ -265,13 +262,13 @@ smart.data <-	{ R6::R6Class(
 							as.character(x)
 						}
 				}
-
 			term_list <- if (...length() > 0){
 				rlang::enexprs(...) |> .checkout()
-			} else { self$smart.rules$for_usage %$% ls() }
-
+			} else {
+				self$smart.rules$for_usage %$% ls()
+			}
 			retain <- rlang::enexpr(retain) |> .checkout()
-			retain <- rlang::enexpr(omit) |> .checkout()
+			omit <- rlang::enexpr(omit) |> .checkout()
 
 			if (rlang::is_empty(retain)){ retain <- NULL }
 			if (rlang::is_empty(omit)){ omit <- NULL }
@@ -295,21 +292,14 @@ smart.data <-	{ R6::R6Class(
 				c(retain) |>
 				purrr::compact() |>
 				purrr::discard(\(i) i %in% omit) |>
-				unique() |>
-				rlang::syms() |>
-				rlang::as_quosures(
-					env = rlang::as_data_mask(self$data[eval(rlang::enexpr(subset))])
-					, named = TRUE
-					)
+				unique()
 			}
 
 			# Return 'self$data' selected by taxonomy fields
 			if (rlang::is_empty(all_fields)){
 				stop("No taxonomy found.")
 			} else {
-				# self$data[eval(rlang::enexpr(subset)), eval(all_fields)] |>
-				lapply(all_fields, rlang::eval_tidy) |>
-					data.table::as.data.table()
+				self$data[eval(rlang::enexpr(subset)), mget(all_fields)]
 			}
 		},
 		#' @description
@@ -330,20 +320,22 @@ smart.data <-	{ R6::R6Class(
 						, pattern = "Avail.+ory.+"
 						, omit_no_match = TRUE
 						, simplify = TRUE
-						) %>%
-					.[!. == ""] |>
+						) |>
+					purrr::discard(\(x) x == "") |>
 					stringi::stri_extract_all_regex("[0-9]", simplify = TRUE) |>
-						as.vector() |>
-						paste(collapse = "") |>
-						as.integer() * 0.01 * (1024^2)
+					as.vector() |>
+					paste(collapse = "") |>
+					as.integer() * 0.01 * (1024^2)
 			}
 
 			logi_vec <- { c(
 					add.cache 	= any(grepl("^(add|regi)"	, x = as.character(substitute(action)), ignore.case = TRUE))
 					, rem.cache = any(grepl("^(rem|unreg)", x = as.character(substitute(action)), ignore.case = TRUE))
 					, upd.cache = any(grepl("^(upd|refr)"	, x = as.character(substitute(action)), ignore.case = TRUE))
-					) %>% .[which(.)]
-				} |> names();
+					) |>
+					purrr::keep(\(x) x) |>
+					names();
+				}
 
 			add.cache <- function(nm){
 				if (.___SMART___$exists(nm)){

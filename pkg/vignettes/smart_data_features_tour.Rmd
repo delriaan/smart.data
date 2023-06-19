@@ -1,0 +1,119 @@
+---
+title: "Smart Data: Key Features"
+output: rmarkdown::html_vignette
+vignette: >
+ %\\VignetteIndexEntry{Smart Data: Key Features}
+ %\\VignetteIndexEngine{knitr::rmarkdown}
+ %\\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Setup 
+
+To demonstrate the key features of the `smart.data` package, we'll use the `mtcars` data set:
+
+```{r setup}
+library(smart.data)
+
+smrt <- smart.data$new(x = mtcars, name = "smart_cars")
+```
+
+# Naming API
+
+```{r NAMING_RULE}
+# `make_model = "rn"` is needed because row names are retained when the 
+# 	input data is converted to a `data.table` object
+smrt$naming.rule(
+	!!!c(make_model = "rn"
+			 , (\(x) rlang::set_names(x, toupper(x)))(names(mtcars))))$
+	enforce.rules(for_naming)
+
+print(head(smrt$data))
+```
+
+# Taxonomy API
+
+## Defining Taxonomy Terms
+
+Next, we'll define a set of taxonomy terms and map them to subsets of the field names.  
+
+> *Note*: if an pending naming map exists, it will automatically be enforced to ensure taxonomy field selection is based on current data names:
+
+Taxonomy terms:
+
+- **identifier**: make_model
+- **performance**: MPG, QSEC, HP
+- **metrics**: CYL, DISP, DRAT, WG, GEAR, CARB
+- **style**: VS, AM
+
+```{r TAXONOMY_DEF}
+identifier <- taxonomy(term = "identifier", desc = "Make and Model"
+											 , fields = c("make_model"))
+performance <- taxonomy(term = "performance", desc = "Performance stats"
+												, fields = c("MPG", "QSEC", "HP"))
+metrics <- taxonomy(term = "metrics", desc = "Physical Metrics"
+										, fields = c("CYL", "DISP", "DRAT", "WT", "GEAR", "CARB"))
+style <- taxonomy(term = "characteristics", desc = "Categorical Descriptors"
+									, fields = c("VS", "AM"))
+
+smrt$
+	taxonomy.rule(identifier, performance, metrics, style)$
+	enforce.rules(for_usage)
+```
+
+## Using Taxonomy Terms 
+
+To use the defined terms, class method `$use()` is invoked.  The output can be tailored depending on the arguments supplied:
+
+```{r TAXONOMY_USE}
+# Use everything
+smrt$use() |> head()
+
+# Use 'identifier' fields
+smrt$use(identifier) |> head()
+
+# Use 'performance' fields
+smrt$use(performance) |> head()
+
+# Use 'metrics' fields omitting field "DISP"
+smrt$use(metrics, omit=DISP) |> head()
+
+# Use 'style' and 'identifier' fields also retaining field "QSEC
+smrt$use(style, identifier, retain = QSEC) |> head()
+
+# Use 'style' and 'identifier' fields also retaining fields "DISP" and "QSEC"
+smrt$use(style, identifier, retain = c(DISP, QSEC)) |> head()
+
+# Use 'style' and 'identifier' fields also retaining fields "DISP" and "QSEC" 
+#		filtering for rows where field 'make_model' contains the pattern "Merc"
+smrt$use(style, identifier, retain = c(DISP, QSEC)
+				 , subset = grepl("Merc", make_model)) |> head()
+```
+
+# Using the Smart Cache 
+
+Each `smart.data` object can be given an name during class invocation or by assigning directly after the fact.  When names are compliant for use with `cachem`, the class instance can be sent to the cache contained within the package environment:
+
+```{r SMART_CACHE}
+smrt$cache_mgr(action = register)
+
+# View existing cached objects
+get.smart(list.only = TRUE)
+
+# Verify equivalent calls
+identical(get.smart(smart_cars)$data, smrt$data)
+
+# Use cached objects with taxonomy
+get.smart(smart_cars)$
+	use(performance, identifier, subset = grepl("Merc", make_model))
+```
+
+If the underlying data is changed, the cached instance can be updated by using `$cache_mgr(action = replace)`.
+
+The benefit of caching is that the cached instance can be invoked from anywhere in your workflow without worrying about environment scope (except for parallel computing contexts).
