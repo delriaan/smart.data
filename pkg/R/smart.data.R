@@ -111,7 +111,7 @@ smart.data <-	{ R6::R6Class(
 		#'  \item{desc}{(character) A description for each term's interpretation or context for usage }
 		#'	\item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
 		#' }
-		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms
+		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("<DATA NAMES>") is provided containing fields names that can be interactively selected.
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
 		taxonomy.rule = function(..., gui = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |> lapply(as.taxonomy)
@@ -146,9 +146,9 @@ smart.data <-	{ R6::R6Class(
 
 			# Conditional interactive editing of the taxonomy
 			if (interactive() & gui){
-				field_list <- append(field_list, list(data_names = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))) |>
+				field_list <- append(field_list, list(`<DATA NAMES>` = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))) |>
 					listviewer::jsonedit_gadget() |>
-					purrr::discard_at("data_names") |>
+					purrr::discard_at("<DATA NAMES>") |>
 					purrr::compact()
 			}
 

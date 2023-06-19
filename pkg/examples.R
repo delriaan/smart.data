@@ -12,7 +12,7 @@
 # Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
 # Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
 
-
+library(smart.data)
 orig_data <- data.table::as.data.table(mtcars, keep.rownames = TRUE) |> data.table::setnames("rn", "make_model")
 data_names <- (\(x) rlang::set_names(x, toupper(x)))(names(orig_data))
 
@@ -46,8 +46,13 @@ smrt <- smart.data$
 # [, 8]	vs	Engine (0 = V-shaped, 1 = straight)
 # [, 9]	am	Transmission (0 = automatic, 1 = manual)
 
-smrt$taxonomy.rule(gui = TRUE)
-smrt$enforce.rules(for_usage)
+smrt$taxonomy.rule(
+	identifier = taxonomy(term = "identifier", desc = "Make and Model")
+	, performance = taxonomy(term = "performance", desc = "Performance stats")
+	, metrics  = taxonomy(term = "metrics", desc = "Physical Metrics")
+	, characteristics = taxonomy(term = "characteristics", desc = "Categorical Descriptors")
+	, gui = TRUE
+	)$enforce.rules(for_usage)
 
 # debug(smrt$use)
 # smrt$smart.rules$for_usage %$% mget(ls())
