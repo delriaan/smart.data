@@ -428,7 +428,9 @@ smart.data <-	{ R6::R6Class(
 			assign(hist_name()
 			 , self$smart.rules %$% mget(ls()) |> f()
 			 , envir = private$history
-			 )
+			 );
+
+			invisible(self);
 		}
 	)}
 	, private = { list(orig.data = NULL, version = NULL, history = NULL)}
