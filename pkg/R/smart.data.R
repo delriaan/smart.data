@@ -111,7 +111,7 @@ smart.data <-	{ R6::R6Class(
 		#' }
 		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("<DATA NAMES>") is provided containing fields names that can be interactively selected.
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
-		taxonomy.rule = function(..., gui = FALSE){
+		taxonomy.rule = function(..., chatty = FALSE, gui = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |> lapply(as.taxonomy)
 
 			# Check for pre-existing term map ====
