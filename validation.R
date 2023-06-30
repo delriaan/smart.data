@@ -41,6 +41,7 @@ smrt <- smart.data$
 # [, 8]	vs	Engine (0 = V-shaped, 1 = straight)
 # [, 9]	am	Transmission (0 = automatic, 1 = manual)
 
+debug(smrt$taxonomy.rule)
 smrt$taxonomy.rule(gui = TRUE)
 smrt$enforce.rules(for_usage)
 

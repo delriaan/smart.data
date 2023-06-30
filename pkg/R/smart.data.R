@@ -103,7 +103,7 @@ smart.data <-	{ R6::R6Class(
 		#'
 		#' Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with the following required fields:
 		#'
-		#' @param ... (\code{\link[rlang]{dots_list}}) A taxonomy objects created with \code{\link{taxonomy}}. Alternatively, \emph{named} lists may be provided which conform to the following:\cr
+		#' @param ... (\code{\link[rlang]{dots_list}}) These arguments will \emph{add}, \emph{update}, or \emph{remove} taxonomy entries. Arguments should be \code{taxonomy} objects created with \code{\link{taxonomy}}, a length-1 \emph{named} list consisting of \code{NULL} (which removes existing entries), or a \emph{named} list with child elements structured as follows:\cr
 		#' \describe{
 		#'  \item{term}{(character) The name of the taxonomy term}
 		#'  \item{desc}{(character) A description for each term's interpretation or context for usage }
@@ -111,8 +111,18 @@ smart.data <-	{ R6::R6Class(
 		#' }
 		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("<DATA NAMES>") is provided containing fields names that can be interactively selected.
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
+		#' @note
 		taxonomy.rule = function(..., chatty = FALSE, gui = FALSE){
-			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |> lapply(as.taxonomy)
+			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |>
+				purrr::imodify(\(x, y){
+					if (!rlang::is_empty(x)){
+						as.taxonomy(x);
+					} else {
+						# Remove an existing taxonomy object
+						self$smart.rules$for_usage %$% rm(list = y);
+						rlang::zap();
+					}
+				})
 
 			# Check for pre-existing term map ====
 			default_taxonomy <- self$smart.rules$for_usage %$% mget(ls())
@@ -128,35 +138,42 @@ smart.data <-	{ R6::R6Class(
 			these_taxonomies <- {
 				if (.taxonomy.exists){
 					if (!rlang::is_empty(term.map)){
-						default_taxonomy[names(term.map)] <- term.map
+						# Update or add to existing taxonomy objects
+						purrr::list_assign(.x = default_taxonomy, !!!term.map)
 					} else {
 						default_taxonomy
 					}
 				} else if (!rlang::is_empty(term.map)){
 					term.map
 				} else {
-					stop("At least one element of `term.map` must be of class 'taxonomy'")
+					# Default to empty taxonomy
+					list(as.taxonomy(replicate(3, character(), simplify = FALSE) |> rlang::set_names(getSlots("taxonomy")[1:3] |> names())))
 				}
 			}
 
 			# Create a list of entries per taxonomy object slot @fields
-			field_list <- purrr::map(these_taxonomies, \(i) i@fields);
+			field_list <- purrr::map(these_taxonomies, \(i) i@fields) |> purrr::compact();
 
 			# Conditional interactive editing of the taxonomy
 			if (interactive() & gui){
-				field_list <- append(field_list, list(`<DATA NAMES>` = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))) |>
+				field_list <- append(
+					field_list
+					 , list(`<DATA NAMES>` = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))
+					 ) |>
 					listviewer::jsonedit_gadget() |>
 					purrr::discard_at("<DATA NAMES>") |>
 					purrr::compact()
 			}
 
 			# Only process entries with non-empty entries for @fields
-			purrr::iwalk(field_list, \(i, j){
-				if (!rlang::is_empty(i)){
-					these_taxonomies[[j]]@fields <- unlist(i)
-				}
-				assign(j, these_taxonomies[[j]], envir = self$smart.rules$for_usage)
-			})
+			if (!rlang::is_empty(field_list)){
+				purrr::iwalk(field_list, \(i, j){
+					if (!rlang::is_empty(i)){
+						these_taxonomies[[j]]@fields <- unlist(i)
+					}
+					assign(j, these_taxonomies[[j]], envir = self$smart.rules$for_usage)
+				})
+			}
 
 			invisible(self);
 		},

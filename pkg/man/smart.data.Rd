@@ -92,22 +92,22 @@ Before invisibly returning the class object, a list is saved to \code{self$smart
 
 Parameter \code{term.map} is a \code{\link[data.table]{data.table}} object with the following required fields:
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(..., gui = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$taxonomy.rule(..., chatty = FALSE, gui = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{(\code{\link[rlang]{dots_list}}) A taxonomy objects created with \code{\link{taxonomy}}. Alternatively, \emph{named} lists may be provided which conform to the following:\cr
+\item{\code{...}}{(\code{\link[rlang]{dots_list}}) These arguments will \emph{add}, \emph{update}, or \emph{remove} taxonomy entries. Arguments should be \code{taxonomy} objects created with \code{\link{taxonomy}}, a length-1 \emph{named} list consisting of \code{NULL} (which removes existing entries), or a \emph{named} list with child elements structured as follows:\cr
 \describe{
 \item{term}{(character) The name of the taxonomy term}
 \item{desc}{(character) A description for each term's interpretation or context for usage }
 \item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
 }}
 
-\item{\code{gui}}{(logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("\if{html}{\out{<DATA NAMES>}}") is provided containing fields names that can be interactively selected.}
-
 \item{\code{chatty}}{(logical|FALSE) Should additional information be printed to the console?}
+
+\item{\code{gui}}{(logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("\if{html}{\out{<DATA NAMES>}}") is provided containing fields names that can be interactively selected.}
 }
 \if{html}{\out{</div>}}
 }
