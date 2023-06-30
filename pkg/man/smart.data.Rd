@@ -29,6 +29,7 @@ The goal of the \code{smart.data} package is to provide an API that allows for s
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
+\item \href{#method-smart.data-print}{\code{smart.data$print()}}
 \item \href{#method-smart.data-new}{\code{smart.data$new()}}
 \item \href{#method-smart.data-naming.rule}{\code{smart.data$naming.rule()}}
 \item \href{#method-smart.data-taxonomy.rule}{\code{smart.data$taxonomy.rule()}}
@@ -40,6 +41,16 @@ The goal of the \code{smart.data} package is to provide an API that allows for s
 \item \href{#method-smart.data-capture}{\code{smart.data$capture()}}
 \item \href{#method-smart.data-clone}{\code{smart.data$clone()}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-smart.data-print"></a>}}
+\if{latex}{\out{\hypertarget{method-smart.data-print}{}}}
+\subsection{Method \code{print()}}{
+Print Metadata
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{smart.data$print()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-smart.data-new"></a>}}

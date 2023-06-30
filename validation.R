@@ -17,7 +17,7 @@ smrt <- smart.data$
 	new(x = orig_data, name = "smart_cars")$
 	naming.rule(!!!data_names)$
 	enforce.rules(for_naming)
-
+smrt
 # names(smrt$data)
 # smrt$smart.rules$for_naming@law
 
@@ -41,9 +41,10 @@ smrt <- smart.data$
 # [, 8]	vs	Engine (0 = V-shaped, 1 = straight)
 # [, 9]	am	Transmission (0 = automatic, 1 = manual)
 
-debug(smrt$taxonomy.rule)
-smrt$taxonomy.rule(gui = TRUE)
+# debug(smrt$taxonomy.rule)
+smrt$taxonomy.rule(identifier = taxonomy(term = "identifier", desc = "Object identifier", fields = "make_model"), gui = TRUE)
 smrt$enforce.rules(for_usage)
+smrt
 
 # debug(smrt$use)
 # smrt$smart.rules$for_usage %$% mget(ls())

@@ -19,6 +19,20 @@ smart.data <-	{ R6::R6Class(
 		id = NULL,
 		#' @field smart.rules An environment holding user-generated sets of rules
 		smart.rules = NULL,
+		#' @description Print Metadata
+		print = function(){
+			cat(
+				sprintf("smart.data %s", packageVersion("smart.data"))
+				, smrt$smart.rules %$% { purrr::modify_if(
+							ls()
+							, \(x) x == "for_usage"
+							, \(x) sprintf("%s (%s terms)", x, ls(get(x)) |> length())
+							, .else = \(x) sprintf("%s (map size: %s)", x, get(x)@name_map |> length())
+							) }
+				, sprintf("$data: %s", paste(dim(self$data), collapse = " x "))
+				, sep = "\n- "
+				)
+		},
 		#' @description Initialize the class object.
 		#' @param x The input data
 		#' @param name The name for the smart class when used in smart functions
