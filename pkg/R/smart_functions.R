@@ -44,14 +44,6 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 		# :: Xfer smart.rules
 		.temp$smart.rules <- env[[i]]$smart.rules;
 
-		if ("for_transformation" %in% names(.temp$smart.rules)){
-			if (purrr::is_empty(attr(.temp$smart.rules$for_transformation, "state"))){
-				setattr(.temp$smart.rules$for_transformation, "state", "enforced")
-			}
-
-			purrr::walk(.temp$smart.rules$for_transformation, \(x) if (purrr::is_empty(attr(x, "active"))){ setattr(x, "state", FALSE) });
-		}
-
 		if (hasName(env[[i]], "cache")){
 			.temp$cache_mgr(action = upd);
 		}

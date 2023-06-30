@@ -23,7 +23,7 @@ smart.data <-	{ R6::R6Class(
 		print = function(){
 			cat(
 				sprintf("smart.data %s", packageVersion("smart.data"))
-				, smrt$smart.rules %$% { purrr::modify_if(
+				, self$smart.rules %$% { purrr::modify_if(
 							ls()
 							, \(x) x == "for_usage"
 							, \(x) sprintf("%s (%s terms)", x, ls(get(x)) |> length())
