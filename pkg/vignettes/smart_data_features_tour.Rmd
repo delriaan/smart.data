@@ -20,7 +20,7 @@ To demonstrate the key features of the `smart.data` package, we'll use the `mtca
 
 ```{r setup}
 library(smart.data)
-
+smart.start()
 smrt <- smart.data$new(x = mtcars, name = "smart_cars")
 ```
 

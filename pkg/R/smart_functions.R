@@ -83,3 +83,29 @@ get.smart <- function(..., list.only = FALSE){
 
 	if (length(.these) == 1){ .these[[1]] } else { .these }
 }
+
+#' Cache Initialization and Update
+#'
+#' \code{smart.start} creates or updates the smart-cache created using \code{\link[cachem]{cache_layered}}.
+#'
+#' @param ... See \code{\link[cachem]{cache_layered}}
+#'
+#' @export
+smart.start <- function(...){
+	rlang::env_unlock(rlang::pkg_env("smart.data"))
+	if (rlang::is_empty(as.environment("package:smart.data")[[".___SMART___"]])){
+		# Create the cache
+		assign(
+			x = ".___SMART___"
+			, value = cachem::cache_layered(cachem::cache_mem(), ...)
+			, envir = as.environment("package:smart.data")
+			);
+	} else { # Append to the existing cache and replace
+		assign(
+			x = ".___SMART___"
+			, value = cachem::cache_layered(cachem::cache_mem(), .___SMART___, ...)
+			, envir = as.environment("package:smart.data")
+			);
+	}
+	rlang::env_lock(rlang::pkg_env("smart.data"))
+}

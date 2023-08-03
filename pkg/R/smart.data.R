@@ -2,6 +2,8 @@
 #' @description
 #' The goal of the \code{smart.data} package is to provide an API that allows for semantic interaction with tabular data as well as governed manipulation of the same.  Each \code{smart.data} object is an R6 reference class instance which can be symbolically retrieved from memory cache (see \code{\link[cachem]{cachem_mem}}) as well as by direct workspace object invocation.
 #'
+#' Before using the \code{smart.data} reference class for the first time in a user session, \code{\link{smart.start}}() needs to be invoked in order to create the smart-cache.
+#'
 #' @importFrom magrittr %>% %T>% %<>% or %$%
 #' @importFrom stringi %s+%
 #' @importFrom utils hasName
@@ -38,16 +40,8 @@ smart.data <-	{ R6::R6Class(
 		#' @param name The name for the smart class when used in smart functions
 		#' @param ... Arguments used to initialize the smart cache (see \code{\link[cachem]{cache_layered}} and related).  If none are provided, the default is to create a memory cache via \code{\link[cachem]{cache_mem}}
 		initialize = function(x, name = "new_data", ...){
-			if (!".___SMART___" %in% ls("package:smart.data")){
-				rlang::env_unlock(rlang::pkg_env("smart.data"))
-
-				assign(
-					x = ".___SMART___"
-					, value = cachem::cache_layered(cachem::cache_mem(), ...)
-					, envir = as.environment("package:smart.data")
-					);
-
-				rlang::env_lock(rlang::pkg_env("smart.data"))
+			if (rlang::is_empty(as.environment("package:smart.data")[[".___SMART___"]])){
+				stop("Smart cache needs to be initialized (see ?smart.start)")
 			}
 
 			if (is.smart(x)){
@@ -125,7 +119,6 @@ smart.data <-	{ R6::R6Class(
 		#' }
 		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("<DATA NAMES>") is provided containing fields names that can be interactively selected.
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
-		#' @note
 		taxonomy.rule = function(..., chatty = FALSE, gui = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |>
 				purrr::imodify(\(x, y){
@@ -345,6 +338,10 @@ smart.data <-	{ R6::R6Class(
 		#' @param chatty (logical | TRUE) When \code{TRUE}, a confirmation dialog is invoked.
 		#' @param ... Additional arguments to use when initializing a cache object
 		cache_mgr = function(action, chatty = FALSE, ...){
+			if (rlang::is_empty(as.environment("package:smart.data")[[".___SMART___"]])){
+				stop("Smart cache needs to be initialized (see ?smart.start)")
+			}
+
 			if (!"max.sz" %in% ls(private)){
 				private$max.sz <- stringi::stri_extract_all_regex(
 						str = system("systeminfo", intern = TRUE)
