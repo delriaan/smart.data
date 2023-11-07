@@ -113,6 +113,8 @@ setMethod("as.taxonomy", "list"
 			do.call(taxonomy, args = x)
 	})
 
+#' @exportClass "data.table"
+
 #' @export
 setMethod("as.taxonomy", "data.table"
 	, function(x){

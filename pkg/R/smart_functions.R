@@ -109,3 +109,4 @@ smart.start <- function(...){
 	}
 	rlang::env_lock(rlang::pkg_env("smart.data"))
 }
+

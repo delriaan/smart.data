@@ -117,22 +117,26 @@ smart.data <-	{ R6::R6Class(
 		#'  \item{desc}{(character) A description for each term's interpretation or context for usage }
 		#'	\item{fields}{(string[]) Optionally provided: contains a vector of field names in \code{$data} mapped to the term}
 		#' }
-		#' @param gui (logical|FALSE) Should an the GUI for interactive rules management be shown?  \code{TRUE} invokes \code{\link[listviewer]{jsonedit_gadget}} which has the benefit of multi-select drag-n-drop arrangement of terms as well as provides the ability to duplicate field entries under multiple terms.  An additional entry in the GUI ("<DATA NAMES>") is provided containing fields names that can be interactively selected.
+		#' @param gui (logical|FALSE) (ignored)
 		#' @param chatty (logical|FALSE) Should additional information be printed to the console?
 		taxonomy.rule = function(..., chatty = FALSE, gui = FALSE){
 			term.map <- rlang::dots_list(...,.named = TRUE, .ignore_empty = "all") |>
 				purrr::imodify(\(x, y){
 					if (!rlang::is_empty(x)){
-						as.taxonomy(x);
+						if (!is.taxonomy(x)){
+							as.taxonomy(x)
+						} else {
+							x
+						}
 					} else {
-						# Remove an existing taxonomy object
+						# Remove an existing taxonomy object or non-taxonomy objects
 						self$smart.rules$for_usage %$% rm(list = y);
 						rlang::zap();
 					}
-				})
+				});
 
 			# Check for pre-existing term map ====
-			default_taxonomy <- self$smart.rules$for_usage %$% mget(ls())
+			default_taxonomy <- self$smart.rules$for_usage %$% mget(ls());
 
 			.taxonomy.exists <- !rlang::is_empty(default_taxonomy);
 
@@ -161,18 +165,7 @@ smart.data <-	{ R6::R6Class(
 			# Create a list of entries per taxonomy object slot @fields
 			field_list <- purrr::map(these_taxonomies, \(i) i@fields) |> purrr::compact();
 
-			# Conditional interactive editing of the taxonomy
-			if (interactive() & gui){
-				field_list <- append(
-					field_list
-					 , list(`<DATA NAMES>` = setdiff(names(self$data), unique(unlist(field_list, use.names = FALSE))))
-					 ) |>
-					listviewer::jsonedit_gadget() |>
-					purrr::discard_at("<DATA NAMES>") |>
-					purrr::compact()
-			}
-
-			# Only process entries with non-empty entries for @fields
+			# Only process entries with non-empty entries for @fields ====
 			if (!rlang::is_empty(field_list)){
 				purrr::iwalk(field_list, \(i, j){
 					if (!rlang::is_empty(i)){
