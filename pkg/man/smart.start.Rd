@@ -4,10 +4,12 @@
 \alias{smart.start}
 \title{Cache Initialization and Update}
 \usage{
-smart.start(...)
+smart.start(..., mem_opts = NULL)
 }
 \arguments{
 \item{...}{See \code{\link[cachem]{cache_layered}}}
+
+\item{mem_opts}{(list | NULL) See \code{\link[cachem]{cache_mem}}}
 }
 \description{
 \code{smart.start} creates or updates the smart-cache created using \code{\link[cachem]{cache_layered}}.

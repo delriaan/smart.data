@@ -4,7 +4,7 @@
 \alias{smart.data}
 \title{Smart Interaction With Data}
 \description{
-The goal of the \code{smart.data} package is to provide an API that allows for semantic interaction with tabular data as well as governed manipulation of the same.  Each \code{smart.data} object is an R6 reference class instance which can be symbolically retrieved from memory cache (see \code{\link[cachem]{cachem_mem}}) as well as by direct workspace object invocation.
+\code{smart.data} package aims to provide an API that allows for semantic interaction with tabular data as well as governed manipulation of the same.  Each \code{smart.data} object is an R6 reference class instance which can be symbolically retrieved from memory cache (see \code{\link[cachem]{cachem_mem}}) as well as by direct workspace object invocation.
 
 Before using the \code{smart.data} reference class for the first time in a user session, \code{\link{smart.start}}() needs to be invoked in order to create the smart-cache.
 }

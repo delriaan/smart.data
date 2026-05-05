@@ -2,11 +2,8 @@
 #'
 #' @description
 #' \code{is.smart} checks the argument \code{i} for attributes and objects indicating the "smart.data" class
-#'
 #' @param ... One or more smart.data objects
-#'
 #' @return A vector of logical results the length of the input.
-#'
 #' @export
 is.smart <- function(...){
 	purrr::map(rlang::list2(...), \(x){
@@ -20,42 +17,40 @@ is.smart <- function(...){
 #' Upgrade a Smart Object
 #'
 #' \code{smart.upgrade} assigns a new \code{smart.data} object to replace the existing object.  The primary use case for this function is when there is a package upgrade, and down-rev objects need to be upgraded.  Objects \code{$smart.rules}, \code{private$orig.data}, \code{$cache}, and \code{$name} are preserved.
-#'
 #' @param ... Names or symbols of 'smart.data' objects
 #' @param env The environment object where the smart object(s) reside
 #' @param chatty (logical) When \code{TRUE}, additional messages are sent to the
-#'
 #' @export
 smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 	if (...length() == 0){ message("Nothing to do!"); return() }
 
-	env <- substitute(env);
+	env <- substitute(env)
 	env <- if (class(env) %in% c("call", "name")){ eval(env) } else { eval(str2lang(env)) }
 
-	queue <- as.character(rlang::exprs(...));
+	queue <- as.character(rlang::exprs(...))
 
 	.func <- function(i){
-		.temp <- smart.data$new(env[[i]]$data, env[[i]]$name);
+		.temp <- smart.data$new(env[[i]]$data, env[[i]]$name)
 
 		# :: Xfer data
-		.temp$.__enclos_env__$private$orig.data <- env[[i]]$.__enclos_env__$private$orig.data;
-		.temp$data <- env[[i]]$data;
+		.temp$.__enclos_env__$private$orig.data <- env[[i]]$.__enclos_env__$private$orig.data
+		.temp$data <- env[[i]]$data
 
 		# :: Xfer smart.rules
-		.temp$smart.rules <- env[[i]]$smart.rules;
+		.temp$smart.rules <- env[[i]]$smart.rules
 
 		if (hasName(env[[i]], "cache")){
-			.temp$cache_mgr(action = upd);
+			.temp$cache_mgr(action = upd)
 		}
 
 		# :: Complete the xfer
 		if (chatty){ message("Preparing to upgrade " %s+% i, appendLF = FALSE) }
-		assign(i, .temp, envir = env);
+		assign(i, .temp, envir = env)
 
 		if (chatty){ message(": Success!", appendLF = TRUE)}
 	}
 
-	purrr::walk(queue, .func);
+	purrr::walk(queue, .func)
 }
 #
 #' Get a Smart Object
@@ -64,22 +59,20 @@ smart.upgrade <- function(..., env = globalenv(), chatty = FALSE){
 #'
 #' @param ... Names of the smart objects (as found in class member \code{name}) given as symbols or strings
 #' @param list.only (logical | FALSE) When \code{TRUE} existing keys of the smart-cache are returned before exiting
-#'
 #' @return A list of retrieved \code{smart.data} objects, invisibly.
-#'
 #' @export
 get.smart <- function(..., list.only = FALSE){
 	if (list.only)( return(.___SMART___$keys()) )
 
 	.these <- if (...length() == 0){
 			if (interactive()){
-				tcltk::tk_select.list(.___SMART___$keys(), multiple = TRUE, title = "Choose 'smart.data' Objects")
+				svDialogs::dlg_list(.___SMART___$keys(), multiple = TRUE, title = "Choose 'smart.data' Objects", rstudio = FALSE)
 			} else {
 				.___SMART___$keys()
 			}
 	} else { as.character(rlang::exprs(...)) }
 
-	.these <- purrr::map(purrr::set_names(.these), \(x) .___SMART___$get(x));
+	.these <- purrr::map(purrr::set_names(.these), \(x) .___SMART___$get(x))
 
 	if (length(.these) == 1){ .these[[1]] } else { .these }
 }
@@ -89,24 +82,34 @@ get.smart <- function(..., list.only = FALSE){
 #' \code{smart.start} creates or updates the smart-cache created using \code{\link[cachem]{cache_layered}}.
 #'
 #' @param ... See \code{\link[cachem]{cache_layered}}
-#'
+#' @param mem_opts (list | NULL) See \code{\link[cachem]{cache_mem}}
 #' @export
-smart.start <- function(...){
-	rlang::env_unlock(rlang::pkg_env("smart.data"))
-	if (rlang::is_empty(as.environment("package:smart.data")[[".___SMART___"]])){
+smart.start <- function(..., mem_opts = NULL){
+  attach(new.env(), name = ".___SMART___")
+  env <- as.environment(".___SMART___")
+
+	# rlang::env_unlock(rlang::pkg_env("smart.data"))
+	# if (rlang::is_empty(as.environment("package:smart.data")[[".___SMART___"]])){
+	if (rlang::is_empty(env[[".___SMART___"]])){
 		# Create the cache
+      MEM <- if (is.null(mem_opts)){
+        cachem::cache_mem()
+      } else {
+        do.call(cachem::cache_mem, mem_opts)
+      }
+    
 		assign(
 			x = ".___SMART___"
-			, value = cachem::cache_layered(cachem::cache_mem(), ...)
-			, envir = as.environment("package:smart.data")
-			);
+			, value = cachem::cache_layered(MEM, ...)
+			, envir = env
+			)
 	} else { # Append to the existing cache and replace
 		assign(
 			x = ".___SMART___"
-			, value = cachem::cache_layered(cachem::cache_mem(), .___SMART___, ...)
-			, envir = as.environment("package:smart.data")
-			);
+			, value = cachem::cache_layered(.___SMART___, ...)
+			, envir = env
+			)
 	}
-	rlang::env_lock(rlang::pkg_env("smart.data"))
+	# rlang::env_lock(rlang::pkg_env("smart.data"))
 }
 

@@ -4,13 +4,11 @@
 \name{taxonomy-class}
 \alias{taxonomy-class}
 \alias{taxonomy}
-\title{Smart Taxonomy Constructor
-\code{taxonomy} is an S4 class to create a taxonomy object for use with \code{\link{smart.data}}.}
+\title{Smart Taxonomy Constructor}
 \value{
 An object of class "taxonomy"
 }
 \description{
-Smart Taxonomy Constructor
 \code{taxonomy} is an S4 class to create a taxonomy object for use with \code{\link{smart.data}}.
 }
 \section{Slots}{

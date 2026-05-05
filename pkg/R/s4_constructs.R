@@ -1,6 +1,5 @@
-# https://roxygen2.r-lib.org/articles/rd-other.html
-# :: TAXONOMY ----
 #' Smart Taxonomy Constructor
+#'
 #' \code{taxonomy} is an S4 class to create a taxonomy object for use with \code{\link{smart.data}}.
 #'
 #' @slot term A symbol indicating the term to be accessed with \code{\link{smart.data}} method \code{$use()}: must be of class 'language'
@@ -37,11 +36,10 @@ is.taxonomy <- function(x) {
 #' @export
 as.taxonomy <- function(x){
 	x <- as.list(x)
-	stopifnot(c("term", "desc") %in% names(x))
+	stopifnot(all(c("term", "desc") %in% names(x)))
 	do.call(taxonomy, args = x)
 }
 
-# :: NAMING ----
 #' Smart Naming Constructor
 #'
 #' \code{name_map} is an S4 class to create a naming map for use with \code{\link{smart.data}}
@@ -69,7 +67,6 @@ as.name_map <- function(x){
 	name_map(name_map = x$name_map, law = rlang::expr(eval()), state = "pending")
 }
 
-# :: METHODS ----
 setMethod("initialize", "taxonomy"
 	, function(.Object, term, state = "pending", desc = "~", fields = character(), law = rlang::expr(ls()),...){
 		.Object <- callNextMethod()
@@ -112,8 +109,6 @@ setMethod("as.taxonomy", "list"
 	, definition = function(x){
 			do.call(taxonomy, args = x)
 	})
-
-#' @exportClass "data.table"
 
 #' @export
 setMethod("as.taxonomy", "data.table"
