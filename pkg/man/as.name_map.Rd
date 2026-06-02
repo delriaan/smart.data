@@ -2,20 +2,17 @@
 % Please edit documentation in R/s4_constructs.R
 \name{as.name_map}
 \alias{as.name_map}
-\title{Name Map Coercion}
+\title{Coercion to Name Map}
 \usage{
 as.name_map(x)
 }
 \arguments{
-\item{x}{A list with named elements the same as the slots}
+\item{x}{A list with element 'name_map' (see \code{\link{name_map}}).}
 }
 \value{
-An object of class "name_map"
+A \code{\link{name_map}}
 }
 \description{
-Name Map Coercion
+Coercion to Name Map
 }
-\examples{
-library(smart.data)
-as.name_map(list(name_map = c(A = "a", B = "z"), law = rlang::expr(eval())))
-}
+\keyword{intern}

@@ -7,7 +7,7 @@
 is.taxonomy(x)
 }
 \arguments{
-\item{x}{An object of class "taxonomy" created with \code{link{taxonomy}}}
+\item{x}{An object of class "taxonomy" created with \code{\link{taxonomy}}}
 }
 \value{
 A logical scalar

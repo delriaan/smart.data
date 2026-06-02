@@ -2,20 +2,17 @@
 % Please edit documentation in R/s4_constructs.R
 \name{as.taxonomy}
 \alias{as.taxonomy}
-\title{Taxonomy Coercion}
+\title{Coercion to Taxonomy}
 \usage{
 as.taxonomy(x)
 }
 \arguments{
-\item{x}{A list, JSON string, data.* object with named elements the same as the slots in class \code{\link{taxonomy}}}
+\item{x}{A list with element 'term' and 'desc' (see \code{\link{taxonomy}}).}
 }
 \value{
-Objects of class "taxonomy"
+A \code{\link{taxonomy}} object
 }
 \description{
-Taxonomy Coercion
+Coercion to Taxonomy
 }
-\examples{
-library(smart.data)
-as.taxonomy(list(term = "test_term", desc = "test_description"))
-}
+\keyword{intern}
